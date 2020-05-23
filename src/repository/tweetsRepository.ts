@@ -5,6 +5,18 @@ import { BluzelleHelper } from "./bluzelleHelper";
 @injectable()
 export class TweetsRepository implements TweetsRepositoryI {
 
+  findOne(bluID: string, id: string) : Promise<Tweet | undefined> {
+    return new Promise<Tweet| undefined>(async (resolve, reject) => {
+      try {
+        const bluAPI = new BluzelleHelper<Tweet>(bluID);
+        const result = await bluAPI.findOne(id)
+        resolve(result);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
   list(bluID: string): Promise<Tweet[] | undefined> {
     return new Promise<Tweet[] | undefined>(async (resolve, reject) => {
       try {

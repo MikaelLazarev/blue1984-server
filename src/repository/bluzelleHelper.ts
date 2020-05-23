@@ -33,6 +33,10 @@ export class BluzelleHelper<T> {
           return resolve(BluzelleHelper._cache.get<T>(this.getItemHash(id)));
         }
         const api = await this.getBluzelle();
+        const has = await api.has(id)
+        if (!has) {
+          resolve(undefined);
+        }
         const dataStr = await api.read(id);
         resolve(JSON.parse(dataStr));
       } catch (e) {

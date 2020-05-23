@@ -17,9 +17,23 @@ export interface Tweet {
   favoriteCount: number;
   replyCount: number;
   retweetCount: number;
+  wasChanged: boolean;
+}
+
+
+
+export function isEqual(a: Tweet, b: Tweet) : boolean {
+  if (a.screenName !== b.screenName ||
+      a.text !== b.text ||
+      a.time !== b.time ||
+      a.urls !== b.urls ||
+      a.hashtags !== b.hashtags ||
+      a.images !== b.images) return false;
+  return true;
 }
 
 export interface TweetsRepositoryI {
+  findOne(bluID: string, id: string) : Promise<Tweet | undefined>;
   create(bluID: string, item: Tweet): Promise<string | undefined>;
   list(bluID: string): Promise<Tweet[] | undefined>;
   update(bluID: string, item: Tweet): Promise<void>;

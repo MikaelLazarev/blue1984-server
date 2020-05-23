@@ -31,7 +31,7 @@ export class AccountsService implements AccountsServiceI {
   }
 
   startUpdate() : void{
-    this._updater = setTimeout(this.update, 1000);
+    this._updater = setInterval(() => this.update(), 10000);
 
   }
 
@@ -43,6 +43,7 @@ export class AccountsService implements AccountsServiceI {
   }
 
   async update() {
+    console.log("UPDDD!")
     const accounts = await this._repository.list();
     if (accounts === undefined) {
       console.log("Nothing to update, account = undefined");
