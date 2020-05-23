@@ -1,10 +1,9 @@
 import { bluzelle, API } from "bluzelle";
-import { BasicRepositoryI } from "../core/basic";
 import { v4 as uuidv4 } from "uuid";
 import { GasInfo } from "bluzelle/lib/GasInfo";
 import { BluzelleConfig } from "bluzelle/lib/BluzelleConfig";
 
-export class BluzelleHelper<T> implements BasicRepositoryI<T> {
+export class BluzelleHelper<T> {
   private static _globalConfig: BluzelleConfig;
   private _config: BluzelleConfig;
   private _api: API;

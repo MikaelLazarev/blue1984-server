@@ -7,7 +7,7 @@ import { TYPES } from "../types";
 export class TweetsController {
   private _service: TweetsServiceI;
 
-  constructor(@inject(TYPES.AccountsService) service: TweetsServiceI) {
+  constructor(@inject(TYPES.TweetsService) service: TweetsServiceI) {
     this._service = service;
   }
 

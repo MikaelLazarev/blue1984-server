@@ -11,7 +11,7 @@ export class AccountsRepository implements AccountsRepositoryI {
     this._blu = new BluzelleHelper<Account>("Blu1984");
   }
 
-  create(id: string): Promise<void> {
+  create(id: string): Promise<Account | undefined> {
     return new Promise(async (resolve, reject) => {
       try {
         const newAccount: Account = {
@@ -20,7 +20,7 @@ export class AccountsRepository implements AccountsRepositoryI {
         };
 
         await this._blu.create(id, newAccount);
-        resolve();
+        resolve(newAccount);
       } catch (e) {
         reject(e);
       }

@@ -1,3 +1,4 @@
+import "reflect-metadata"
 import { ConfigParams } from "./config/config";
 import express, { Application } from "express";
 import cors from "cors";
@@ -5,18 +6,13 @@ import { morganLogger } from "./middleware/logger";
 import bodyParser from "body-parser";
 import container from "./config.inversify";
 import { TYPES } from "./types";
-import { TweetsController } from "./controllers/tweetsController";
 import errorHandler from "./middleware/errorHandler";
 import { AccountsController } from "./controllers/accountsController";
-import {BluzelleHelper} from "./repository/bluzelleHelper";
+import { TweetsController } from "./controllers/tweetsController";
+import { BluzelleHelper } from "./repository/bluzelleHelper";
 
 export function createApp(config: ConfigParams): Promise<Application> {
   return new Promise<Application>(async (resolve) => {
-    // Connecting Database
-    try {
-    } catch (e) {
-      console.log("Bluzelle DB connection error: ", e);
-    }
 
     const app = express();
     app.use(
@@ -35,7 +31,7 @@ export function createApp(config: ConfigParams): Promise<Application> {
       uuid: "",
       endpoint: config.bluzelle_endpoint,
       chain_id: config.bluzelle_chain_id,
-    }
+    };
 
     const tweetsController = container.get<TweetsController>(
       TYPES.TweetsController
@@ -51,10 +47,7 @@ export function createApp(config: ConfigParams): Promise<Application> {
     });
 
     // Tweets Controller
-    app.get(
-      "/api/tweets/:id",
-      tweetsController.retrieve()
-    );
+    app.get("/api/tweets/:id", tweetsController.retrieve());
 
     // Accounts Controller
     app.get("/api/accounts/", accountsController.list());

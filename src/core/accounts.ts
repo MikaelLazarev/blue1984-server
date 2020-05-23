@@ -18,12 +18,12 @@ export const accountCreateDTOSchema = {
 };
 
 export interface AccountsRepositoryI {
-  create(id: string): Promise<void>;
+  create(id: string): Promise<Account | undefined>;
   findOne(id: string): Promise<Account | undefined>
   list(): Promise<Account[] | undefined>;
 }
 
 export interface AccountsServiceI {
-  create(dto: AccountCreateDTO): Promise<Account>;
+  create(dto: AccountCreateDTO): Promise<Account | undefined>;
   list(): Promise<Account[] | undefined>;
 }

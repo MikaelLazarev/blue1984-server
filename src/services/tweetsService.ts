@@ -29,4 +29,8 @@ export class TweetsService implements TweetsServiceI {
       }
     });
   }
+
+  update(twitterID: string, blueID: string): Promise<void> {
+    return Promise.resolve(undefined);
+  }
 }

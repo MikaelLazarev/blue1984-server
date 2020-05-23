@@ -17,7 +17,7 @@ let container = new Container();
 // TWEETS
 container
   .bind<TweetsRepositoryI>(TYPES.TweetsRepository)
-  .toConstantValue(TweetsRepository)
+  .to(TweetsRepository)
   .inSingletonScope();
 container.bind<TweetsServiceI>(TYPES.TweetsService).to(TweetsService);
 container

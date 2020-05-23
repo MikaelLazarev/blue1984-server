@@ -1,52 +1,52 @@
 import {
-  Account,
+  Account, AccountCreateDTO,
   AccountsRepositoryI,
   AccountsServiceI,
 } from "../core/accounts";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../types";
+import {TweetsServiceI} from "../core/tweet";
 
 @injectable()
 export class AccountsService implements AccountsServiceI {
   private _repository: AccountsRepositoryI;
+  private _tweetsService : TweetsServiceI;
 
   public constructor(
-    @inject(TYPES.AccountsRepository) repository: AccountsRepositoryI
+    @inject(TYPES.AccountsRepository) repository: AccountsRepositoryI,
+    @inject(TYPES.TweetsService) tweetsService: TweetsServiceI
+
   ) {
     this._repository = repository;
+    this._tweetsService = tweetsService;
+  }
+
+  create(dto: AccountCreateDTO): Promise<Account | undefined> {
+    return this._repository.create(dto.name);
   }
 
   list(): Promise<Account[] | undefined> {
     return this._repository.list();
   }
 
-  get(userId: string): Promise<Account> {
-    return new Promise<Account>(async (resolve) => {
-      let account = await this._repository.findOne(userId);
-        if (account === undefined) {
-          account = new Account();
-          account.id = userId;
-          account.name = "";
-          account.status = "CONNECTING_ACCOUNT";
-          account.address = '';
-          await this._repository.insert(account);
-        }
-        resolve(account);
-    });
+  startUpdate() : void{
+
   }
 
-  async update(
-    userId: string,
-    dto: AccountUpdateDTO
-  ): Promise<Account> {
-    const account = await this.get(userId);
-    account.name = dto.name;
-    account.address = dto.address;
+  stopUpdate() : void {
 
-    if (dto.name.length > 0 && dto.address.length >0) {
-      account.status = 'READY';
+  }
+
+  async update() {
+    const accounts = await this._repository.list();
+    if (accounts === undefined) {
+      console.log("Nothing to update, account = undefined");
+      return
     }
 
-    return this._repository.upsert(account);
+    for(let acc of accounts) {
+
+    }
   }
+
 }
