@@ -52,6 +52,8 @@ export function createApp(config: ConfigParams): Promise<Application> {
     // Accounts Controller
     app.get("/api/accounts/", accountsController.list());
     app.post("/api/accounts/", accountsController.create());
+    app.get("/api/accounts/start", accountsController.startUpdates());
+    app.get("/api/accounts/stop", accountsController.stopUpdates());
 
     // ERROR HANDLER
     app.use(errorHandler);

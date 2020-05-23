@@ -2,9 +2,11 @@ import { bluzelle, API } from "bluzelle";
 import { v4 as uuidv4 } from "uuid";
 import { GasInfo } from "bluzelle/lib/GasInfo";
 import { BluzelleConfig } from "bluzelle/lib/BluzelleConfig";
+import NodeCache from "node-cache";
 
 export class BluzelleHelper<T> {
   private static _globalConfig: BluzelleConfig;
+  private static _cache = new NodeCache({ deleteOnExpire: true, stdTTL: 100 });
   private _config: BluzelleConfig;
   private _api: API;
   private static gasPrice: GasInfo = {
@@ -20,9 +22,16 @@ export class BluzelleHelper<T> {
     this._globalConfig = value;
   }
 
+  get uuid() {
+    return this._config.uuid;
+  }
+
   findOne(id: string): Promise<T | undefined> {
     return new Promise<T | undefined>(async (resolve, reject) => {
       try {
+        if (BluzelleHelper._cache.has(this.getItemHash(id))) {
+          return resolve(BluzelleHelper._cache.get<T>(this.getItemHash(id)));
+        }
         const api = await this.getBluzelle();
         const dataStr = await api.read(id);
         resolve(JSON.parse(dataStr));
@@ -35,13 +44,20 @@ export class BluzelleHelper<T> {
   list(): Promise<T[] | undefined> {
     return new Promise<T[] | undefined>(async (resolve, reject) => {
       try {
+        if (BluzelleHelper._cache.has(this.getLishHash())) {
+          return resolve(BluzelleHelper._cache.get<T[]>(this.getLishHash()));
+        }
+
         const api = await this.getBluzelle();
+
         const dataStr = await api.keyValues();
-        resolve(
-          dataStr.map(({ key, value }) => {
-            return JSON.parse(value);
-          })
-        );
+        const data = dataStr.map(({ key, value }) => {
+          BluzelleHelper._cache.set(this.getItemHash(key), value);
+          return JSON.parse(value);
+        });
+
+        BluzelleHelper._cache.set(this.getLishHash(), data);
+        resolve(data);
       } catch (e) {
         reject(e);
       }
@@ -52,19 +68,28 @@ export class BluzelleHelper<T> {
     return new Promise<string | undefined>(async (resolve, reject) => {
       const api = await this.getBluzelle();
       await api.create(key, JSON.stringify(item), BluzelleHelper.gasPrice);
+      BluzelleHelper._cache.set(this.getItemHash(key), item);
+      BluzelleHelper._cache.del(this.getLishHash());
       resolve(key);
     });
   }
 
   insert(item: T): Promise<string | undefined> {
-    return this.create(uuidv4(), item);
+    return new Promise<string | undefined>(async (resolve, reject) => {
+      const key = await this.create(uuidv4(), item);
+      if (key === undefined) throw "Cant create an element";
+      BluzelleHelper._cache.set(this.getItemHash(key), item);
+      BluzelleHelper._cache.del(this.getLishHash());
+    });
   }
 
-  update(id: string, item: T): Promise<void> {
+  update(key: string, item: T): Promise<void> {
     return new Promise<void>(async (resolve, reject) => {
       try {
         const api = await this.getBluzelle();
-        await api.update(id, JSON.stringify(item), BluzelleHelper.gasPrice);
+        await api.update(key, JSON.stringify(item), BluzelleHelper.gasPrice);
+        BluzelleHelper._cache.set(this.getItemHash(key), item);
+        BluzelleHelper._cache.del(this.getLishHash());
         resolve();
       } catch (e) {
         reject(e);
@@ -76,9 +101,13 @@ export class BluzelleHelper<T> {
     return new Promise<API>(async (resolve, reject) => {
       try {
         if (this._api === undefined) {
-          const api = await bluzelle(this._config);
+          this._api = await bluzelle(this._config);
 
-          const account = await api.account();
+          if (this._api === undefined) {
+            reject("Wrong mnemonic");
+          }
+
+          const account = await this._api.account();
 
           if (account.address === "") {
             reject("Wrong mnemonic");
@@ -90,5 +119,13 @@ export class BluzelleHelper<T> {
         reject(e);
       }
     });
+  }
+
+  private getLishHash(): string {
+    return this.uuid + "!LIST";
+  }
+
+  private getItemHash(key: string): string {
+    return this.uuid + "@" + key;
   }
 }

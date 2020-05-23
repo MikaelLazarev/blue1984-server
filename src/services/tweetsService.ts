@@ -2,6 +2,8 @@ import { Tweet, TweetsRepositoryI, TweetsServiceI } from "../core/tweet";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../types";
 import { AccountsRepositoryI } from "../core/accounts";
+// @ts-ignore
+import { TimelineStream } from 'scrape-twitter';
 
 @injectable()
 export class TweetsService implements TweetsServiceI {
@@ -31,6 +33,13 @@ export class TweetsService implements TweetsServiceI {
   }
 
   update(twitterID: string, blueID: string): Promise<void> {
-    return Promise.resolve(undefined);
+    return new Promise<void>(async (resolve, reject) => {
+      const timeline = new TimelineStream(twitterID)
+      timeline.on('data', (data: string) => {
+        console.log(data);
+      })
+      timeline.on('end', () => console.log("End"))
+
+    })
   }
 }

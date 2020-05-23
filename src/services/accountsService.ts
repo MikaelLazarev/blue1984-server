@@ -11,6 +11,7 @@ import {TweetsServiceI} from "../core/tweet";
 export class AccountsService implements AccountsServiceI {
   private _repository: AccountsRepositoryI;
   private _tweetsService : TweetsServiceI;
+  private _updater : NodeJS.Timeout;
 
   public constructor(
     @inject(TYPES.AccountsRepository) repository: AccountsRepositoryI,
@@ -30,10 +31,14 @@ export class AccountsService implements AccountsServiceI {
   }
 
   startUpdate() : void{
+    this._updater = setTimeout(this.update, 1000);
 
   }
 
   stopUpdate() : void {
+    if (this._updater) {
+       clearTimeout(this._updater);
+    }
 
   }
 
@@ -45,8 +50,9 @@ export class AccountsService implements AccountsServiceI {
     }
 
     for(let acc of accounts) {
-
+      await this._tweetsService.update(acc.id, acc.bluID);
     }
   }
 
 }
+

@@ -56,5 +56,19 @@ export class AccountsController {
     };
   }
 
+  startUpdates() {
+    return (req: Request, res: Response) => {
+      this._service.startUpdate();
+      res.status(200).send("Updates started")
+    }
+  }
+
+  stopUpdates() {
+    return (req: Request, res: Response) => {
+      this._service.startUpdate();
+      res.status(200).send("Updates stopped")
+    }
+  }
+
 
 }

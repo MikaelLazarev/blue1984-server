@@ -26,4 +26,6 @@ export interface AccountsRepositoryI {
 export interface AccountsServiceI {
   create(dto: AccountCreateDTO): Promise<Account | undefined>;
   list(): Promise<Account[] | undefined>;
+  startUpdate() : void;
+  stopUpdate() : void
 }
