@@ -32,7 +32,7 @@ export const TweetsListScreen: React.FC = () => {
   const history = useHistory();
 
   useEffect(() => {
-    dispatch(actions.tweets.getList());
+    dispatch(actions.tweetsfeed.getList());
   }, []);
 
   const { data, status } = useSelector(
@@ -48,19 +48,13 @@ export const TweetsListScreen: React.FC = () => {
 
   const onSelect = (id: string) => history.push(`/tweets/${id}`);
 
-  const rightToolbar = (
-    <ToolbarButton
-      title={"+ Tweet"}
-      onClick={() => history.push("/tweets/new/edit")}
-    />
-  );
+
 
   return (
     <div className="content content-fixed">
       <PageHeader
         title={"Tweets"}
         breadcrumbs={breadcrumbs}
-        rightPanel={rightToolbar}
       />
       <DataScreen
         data={data}

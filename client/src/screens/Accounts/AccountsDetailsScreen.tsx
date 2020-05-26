@@ -5,7 +5,7 @@
  * Copyright (c) 2020. Mikhail Lazarev
  *
  */
-import React, { useEffect } from "react";
+import React, {useEffect, useState} from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 import { RouteComponentProps, useHistory } from "react-router";
@@ -36,14 +36,36 @@ export const AccountsDetailsScreen: React.FC<AccountDetailsScreenProps> = ({
 }: AccountDetailsScreenProps) => {
   const dispatch = useDispatch();
   const history = useHistory();
+  const [hash, setHash] = useState("0");
 
   useEffect(() => {
-    dispatch(actions.accounts.getDetails(id));
+    const newHash = Date.now().toString();
+    setHash(newHash);
+    dispatch(actions.accounts.getDetails(id, newHash));
   }, [id]);
 
   const dataItem = useSelector((state: RootState) =>
     getDetailsItem(state.accounts.Details, id)
   );
+
+  const operationStatus = useSelector(
+      (state: RootState) => state.operations.data[hash]?.data?.status
+  );
+
+  // TODO: Move status to new Dataloader component
+
+  useEffect(() => {
+    if (hash !== "0") {
+      switch (operationStatus) {
+        case STATUS.SUCCESS:
+          break;
+
+        case STATUS.FAILURE:
+          setHash("0");
+          alert("Netwrok error");
+      }
+    }
+  }, [hash, operationStatus]);
 
   if (!dataItem || !dataItem.data || dataItem.status !== STATUS.SUCCESS) {
     return <Loading />;

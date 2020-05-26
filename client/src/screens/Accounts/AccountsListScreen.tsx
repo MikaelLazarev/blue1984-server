@@ -5,7 +5,7 @@
  * Copyright (c) 2020. Mikhail Lazarev
  *
  */
-import React, { useEffect } from "react";
+import React, {useEffect, useState} from "react";
 import PageHeader from "../../components/PageHeader/PageHeader";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -30,9 +30,12 @@ import { DataScreen } from "../../components/DataLoader/DataScreen";
 export const AccountsListScreen: React.FC = () => {
   const dispatch = useDispatch();
   const history = useHistory();
+  const [hash, setHash] = useState("0");
 
   useEffect(() => {
-    dispatch(actions.accounts.getList());
+    const newHash = Date.now().toString();
+    setHash(newHash);
+    dispatch(actions.accounts.getList(newHash));
   }, []);
 
   const { data, status } = useSelector(
@@ -48,12 +51,18 @@ export const AccountsListScreen: React.FC = () => {
 
   const onSelect = (id: string) => history.push(`/accounts/${id}`);
 
-
+  const rightToolbar = (
+      <ToolbarButton
+          title={"+ Account"}
+          onClick={() => history.push("/accounts/new")}
+      />
+  );
   return (
     <div className="content content-fixed">
       <PageHeader
         title={"My accounts"}
         breadcrumbs={breadcrumbs}
+        rightPanel={rightToolbar}
       />
       <DataScreen
         data={data}

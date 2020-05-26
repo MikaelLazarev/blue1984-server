@@ -1,9 +1,9 @@
 import {
   AccountCreateDTO,
-  accountCreateDTOSchema,
+  accountCreateDTOSchema, AccountListDTO, accountListDTOSchema,
   AccountsServiceI,
 } from "../core/accounts";
-import {Request, Response} from "express";
+import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../types";
 import Ajv, { ValidateFunction } from "ajv";
@@ -12,63 +12,92 @@ import Ajv, { ValidateFunction } from "ajv";
 export class AccountsController {
   private _service: AccountsServiceI;
   private readonly _createDTOValidate: ValidateFunction;
+  private readonly _listDTOValidate: ValidateFunction;
 
   constructor(@inject(TYPES.AccountsService) service: AccountsServiceI) {
     this._service = service;
     this._createDTOValidate = new Ajv().compile(accountCreateDTOSchema);
+    this._listDTOValidate = new Ajv().compile(accountListDTOSchema);
   }
 
   create() {
-    return (req: Request, res: Response) => {
-
+    return async (req: Request, res: Response) => {
       const dto: AccountCreateDTO = {
-        name: req.body.name,
+        id: req.body.id,
       };
 
-      if (! this._createDTOValidate(dto)) {
+      if (!this._createDTOValidate(dto)) {
+        console.log("Incorrect request", dto);
         return res.status(400).send("Incorrect request");
       }
 
       console.log(dto);
 
       try {
-        this._service
-            .create(dto)
-            .then((result) => {
-              console.log(result);
-              res.status(200).json(result);
-            })
-            .catch(() => res.status(400).send());
+        const result = await this._service.create(dto);
+        console.log(result);
+        res.status(200).json(result);
       } catch (e) {
-        console.log(e)
+        console.log(e);
         res.status(400).send(e);
       }
     };
   }
 
   list() {
-    return (req: Request, res: Response) => {
+    return async (req: Request, res: Response) => {
+      const dto: AccountListDTO = {
+        accounts: req.body.accounts,
+      };
 
-      this._service
-        .list()
-        .then((result) => res.json(result))
-        .catch((e) => res.status(400).send(e));
+      if (!this._listDTOValidate(dto)) {
+        console.log("Incorrect request", dto);
+        return res.status(400).send("Incorrect request");
+      }
+
+      console.log(dto);
+      try {
+        const result = await this._service.list(dto);
+        console.log(result);
+        res.status(200).json(result);
+      } catch (e) {
+        console.log(e);
+        res.status(400).send(e);
+      }
+
     };
   }
+
+  retrieve() {
+    return async (req: Request, res: Response) => {
+      const id = req.params.id;
+      console.log("RETRIEVE", id)
+      if (id === undefined) {
+        return res.status(400).send("No id");
+      }
+
+      try {
+        const result = await this._service.retrieve(id);
+        res.status(200).json(result);
+      } catch (e) {
+        console.log(e);
+        res.status(400).send();
+      }
+    };
+  }
+
 
   startUpdates() {
     return (req: Request, res: Response) => {
       this._service.startUpdate();
-      res.status(200).send("Updates started")
-    }
+      res.status(200).send("Updates started");
+    };
   }
 
   stopUpdates() {
     return (req: Request, res: Response) => {
       this._service.startUpdate();
-      res.status(200).send("Updates stopped")
-    }
+      res.status(200).send("Updates stopped");
+    };
   }
-
-
 }

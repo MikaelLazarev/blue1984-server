@@ -20,6 +20,7 @@ export class TweetsRepository implements TweetsRepositoryI {
   list(bluID: string): Promise<Tweet[] | undefined> {
     return new Promise<Tweet[] | undefined>(async (resolve, reject) => {
       try {
+        console.log(bluID);
         const bluAPI = new BluzelleHelper<Tweet>(bluID);
         const result = await bluAPI.list();
         resolve(result);

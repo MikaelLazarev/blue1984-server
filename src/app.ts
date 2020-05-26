@@ -33,27 +33,33 @@ export function createApp(config: ConfigParams): Promise<Application> {
       chain_id: config.bluzelle_chain_id,
     };
 
+    const accountsController = container.get<AccountsController>(
+        TYPES.AccountsController
+    );
+
     const tweetsController = container.get<TweetsController>(
       TYPES.TweetsController
     );
 
-    const accountsController = container.get<AccountsController>(
-      TYPES.AccountsController
-    );
+
 
     app.get("/", (req, res) => {
       console.log(req);
       res.status(200).send("It works!");
     });
 
-    // Tweets Controller
-    app.get("/api/tweets/:id", tweetsController.retrieve());
+
 
     // Accounts Controller
-    app.get("/api/accounts/", accountsController.list());
+    app.post("/api/accounts/list/", accountsController.list());
     app.post("/api/accounts/", accountsController.create());
     app.get("/api/accounts/start", accountsController.startUpdates());
     app.get("/api/accounts/stop", accountsController.stopUpdates());
+    app.get("/api/accounts/:id/", accountsController.retrieve());
+
+
+    // Tweets Controller
+    app.get("/api/tweets/:blu_id/:id/", tweetsController.retrieve());
 
     // ERROR HANDLER
     app.use(errorHandler);

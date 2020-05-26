@@ -19,6 +19,12 @@ export class AccountsRepository implements AccountsRepositoryI {
           bluID: uuidv4(),
         };
 
+        const existingAcc = await this._blu.findOne(id);
+
+        if (existingAcc !== undefined) {
+          return resolve(existingAcc);
+        }
+
         await this._blu.create(id, newAccount);
         resolve(newAccount);
       } catch (e) {
@@ -32,6 +38,7 @@ export class AccountsRepository implements AccountsRepositoryI {
   }
 
   list(): Promise<Account[] | undefined> {
+    console.log("UUID", this._blu.uuid);
     return this._blu.list();
   }
 }

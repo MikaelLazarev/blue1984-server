@@ -44,8 +44,7 @@ export const createDataLoaderListActions = (
 export const createDataLoaderDetailActions = (
   api: string,
   actionPrefix: string
-) => {
-  return (
+) =>  (
     id: string,
     hash?: string
   ): ThunkAction<void, RootState, unknown, Action<string>> => async (
@@ -83,7 +82,7 @@ export const createDataLoaderDetailActions = (
       dispatch(updateStatus(hash || "0", STATUS.SUCCESS));
     }
     return action;
-  };
+
 };
 
 export const createDataLoaderCreateUpdateDataAction = <T>(

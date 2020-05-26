@@ -20,8 +20,7 @@ import {RootState} from "../../store";
 import actions from '../../store/actions'
 
 const formSchema = yup.object({
-  name: yup.string().required().min(3),
-  partnerID: yup.string().required(),
+  id: yup.string().required().min(3),
 });
 
 interface FormViewProfileProps extends FormikFormViewProps<Account> {}
@@ -32,17 +31,9 @@ export const FormView: React.FC<FormViewProfileProps> = ({
   isSubmitted,
 }) => {
 
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(actions.accounts.getList());
-  }, [])
-
-  const accounts = useSelector(
-      (state: RootState) => state.accounts.List
-  );
 
   const fields = {
-    name: {
+    id: {
       label: "Account name",
     },
   };

@@ -12,16 +12,20 @@ export class TweetsController {
   }
 
   retrieve() {
-    return (req: Request, res: Response) => {
+    return async (req: Request, res: Response) => {
+      const blu_id = req.params.blu_id;
       const id = req.params.id;
       if (id === undefined) {
+        console.log(id)
         return res.status(400).send("No id");
       }
 
-      this._service
-        .list(id)
-        .then((result) => res.json(result))
-        .catch(() => res.status(400).send());
+      try {
+        const result = await this._service.retrieve(blu_id, id);
+        res.status(200).json(result);
+      } catch (e) {
+        res.status(400).send();
+      }
     };
   }
 }

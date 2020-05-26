@@ -7,36 +7,26 @@
  */
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RouteComponentProps, useHistory } from "react-router";
+import { useHistory } from "react-router";
 
 import PageHeader from "../../components/PageHeader/PageHeader";
 import { Breadcrumb } from "../../components/PageHeader/Breadcrumb";
 import { FormView } from "../../containers/Accounts/FormView";
 
-import { getDetailsItem } from "../../store/dataloader";
 import { STATUS } from "../../utils/status";
 import { RootState } from "../../store";
 import { Account } from "../../core/accounts";
-import { DataFormScreen } from "../../components/DataLoader/DataFormScreen";
 
 import actions from "../../store/actions";
-import {Loading} from "../../components/Loading";
 
-interface MatchParams {
-  id: string;
-}
-
-interface AccountEditScreenProps extends RouteComponentProps<MatchParams> {}
-
-export const AccountsNewScreen: React.FC<AccountEditScreenProps> = () => {
+export const AccountsNewScreen: React.FC = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const [hash, setHash] = useState("0");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-
   const operationStatus = useSelector(
-      (state: RootState) => state.operations.data[hash]?.data?.status
+    (state: RootState) => state.operations.data[hash]?.data?.status
   );
 
   const id = "";
@@ -58,20 +48,17 @@ export const AccountsNewScreen: React.FC<AccountEditScreenProps> = () => {
     }
   }, [hash, operationStatus]);
 
-  const dataItem = useSelector((state: RootState) =>
-      getDetailsItem(state.accounts.Details, id || "0")
-  );
-
-  if (dataItem === undefined) return <Loading/>;
-  const { data, status} = dataItem;
-
   const breadcrumbs: Breadcrumb[] = [
     {
       url: "/account",
-      title: 'Accounts',
+      title: "Accounts",
     },
   ];
 
+  const data: Account = {
+    id: "",
+    bluID: "",
+  };
   const onSubmit = (values: Account) => {
     setIsSubmitted(true);
     const newHash = Date.now().toString();
@@ -82,15 +69,9 @@ export const AccountsNewScreen: React.FC<AccountEditScreenProps> = () => {
   };
 
   return (
-      <div className="content content-fixed">
-        <PageHeader title={'Add new account'} breadcrumbs={breadcrumbs} />
-        <DataFormScreen
-            data={data}
-            status={status}
-            component={FormView}
-            onSubmit={onSubmit}
-            isSubmitted={isSubmitted}
-        />
-      </div>
+    <div className="content content-fixed">
+      <PageHeader title={"Add new account"} breadcrumbs={breadcrumbs} />
+      <FormView data={data} onSubmit={onSubmit} isSubmitted={isSubmitted} />
+    </div>
   );
 };

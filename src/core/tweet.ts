@@ -20,6 +20,11 @@ export interface Tweet {
   wasChanged: boolean;
 }
 
+export interface TweetsFeed {
+  id: string;
+  data: Tweet[];
+}
+
 
 
 export function isEqual(a: Tweet, b: Tweet) : boolean {
@@ -40,6 +45,6 @@ export interface TweetsRepositoryI {
 }
 
 export interface TweetsServiceI {
-  list(id: string): Promise<Tweet[] | undefined>;
+  retrieve(bluID: string, id: string)  : Promise<Tweet | undefined>;
   update(twitterID: string, blueID: string): Promise<void>;
 }

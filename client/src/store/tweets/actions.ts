@@ -12,8 +12,11 @@ import {
   createDataLoaderDetailActions,
   createDataLoaderListActions,
 } from "../dataloader/actions";
-
-export const getList = createDataLoaderListActions(endpoint, TWEETS_PREFIX);
+import {ThunkAction} from "redux-thunk";
+import {RootState} from "../index";
+import {Action} from "redux";
+import actions from "../actions";
+import {Tweet} from "../../core/tweet";
 
 export const getDetails = createDataLoaderDetailActions(
   endpoint + ":id/",

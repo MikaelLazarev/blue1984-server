@@ -8,6 +8,7 @@ export class BluzelleHelper<T> {
   private static _globalConfig: BluzelleConfig;
   private static _cache = new NodeCache({ deleteOnExpire: true, stdTTL: 100 });
   private _config: BluzelleConfig;
+  private _uuid: string;
   private _api: API;
   private static gasPrice: GasInfo = {
     gas_price: 10,
@@ -16,6 +17,7 @@ export class BluzelleHelper<T> {
   constructor(uuid: string) {
     this._config = BluzelleHelper._globalConfig;
     this._config.uuid = uuid;
+    this._uuid = uuid;
   }
 
   static set globalConfig(value: BluzelleConfig) {
@@ -23,7 +25,7 @@ export class BluzelleHelper<T> {
   }
 
   get uuid() {
-    return this._config.uuid;
+    return this._uuid;
   }
 
   findOne(id: string): Promise<T | undefined> {
@@ -48,7 +50,9 @@ export class BluzelleHelper<T> {
   list(): Promise<T[] | undefined> {
     return new Promise<T[] | undefined>(async (resolve, reject) => {
       try {
+        console.log("CACHE", BluzelleHelper._cache.keys())
         if (BluzelleHelper._cache.has(this.getLishHash())) {
+          console.log("$$$$$$ =>>>>> Getting from cache", this.getLishHash())
           return resolve(BluzelleHelper._cache.get<T[]>(this.getLishHash()));
         }
 
@@ -56,7 +60,7 @@ export class BluzelleHelper<T> {
 
         const dataStr = await api.keyValues();
         const data = dataStr.map(({ key, value }) => {
-          BluzelleHelper._cache.set(this.getItemHash(key), value);
+          BluzelleHelper._cache.set(this.getItemHash(key), JSON.parse(value));
           return JSON.parse(value);
         });
 
@@ -72,7 +76,7 @@ export class BluzelleHelper<T> {
     return new Promise<string | undefined>(async (resolve, reject) => {
       const api = await this.getBluzelle();
       await api.create(key, JSON.stringify(item), BluzelleHelper.gasPrice);
-      BluzelleHelper._cache.set(this.getItemHash(key), item);
+      BluzelleHelper._cache.del(this.getItemHash(key));
       BluzelleHelper._cache.del(this.getLishHash());
       resolve(key);
     });
@@ -104,6 +108,7 @@ export class BluzelleHelper<T> {
   private getBluzelle(): Promise<API> {
     return new Promise<API>(async (resolve, reject) => {
       try {
+        console.log(this._config)
         if (this._api === undefined) {
           this._api = await bluzelle(this._config);
 

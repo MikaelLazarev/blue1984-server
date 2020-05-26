@@ -21,3 +21,7 @@ export interface Tweet {
 }
 
 
+export interface TweetsFeed {
+  id: string;
+  data: Tweet[];
+}
