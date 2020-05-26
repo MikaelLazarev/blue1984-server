@@ -10,44 +10,29 @@ import React from "react";
 import { Card, Col, Container, Row, Table } from "react-bootstrap";
 import { Tweet } from "../../core/tweet";
 import { DataScreenComponentProps } from "../../components/DataLoader/DataScreen";
+import {TweetsFeedWidget} from "./TweetsFeedWidget";
+import {useHistory} from "react-router";
+import TabsBar from "../../components/PageHeader/TabsBar";
+import {TabPane} from "../../components/PageHeader/TabPane";
+import {InfoWidget} from "../../screens/Accounts/InfoWidget";
 
 export const TweetsList: React.FC<DataScreenComponentProps<Tweet[]>> = ({
   data,
   onSelect,
 }) => {
-  const onPressed = (id: string) => {
-    if (onSelect) {
-      onSelect(id);
-    }
-  };
 
-  const renderLine = (h: Tweet) => (
-    <tr onClick={() => onPressed(h.id)} key={h.id}>
-      <td className="tx-color-03 text-left tx-normal">{h.id}</td>
-    </tr>
-  );
-  // tx-teal tx-pink
-  const renderTableContent = data.map((h) => renderLine(h));
+  const history = useHistory();
+  const tabs: string[] = ['Feed', 'Changed'];
 
   return (
-    <Container style={{ padding: 0 }}>
-      <Row>
-        <Col lg={12} md={12} xs={12}>
-          <Card className="card-dashboard-table mg-t-20">
-            {/*<!-- card-body -->}*/}
-            <Table className="table-dashboard mg-b-0" hover={true}>
-              <thead>
-                <tr>
-                  <th style={{ width: "25%" }}>Name</th>
-
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>{renderTableContent}</tbody>
-            </Table>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+      <Container className="pd-x-0 pd-lg-x-10 pd-xl-x-0 m-t-20-f pd-t-30-f">
+        <TabsBar tabs={tabs} selected={'#feed'} />
+        <TabPane hash={'#feed'}>
+          <TweetsFeedWidget data={data}/>
+        </TabPane>
+          <TabPane hash={'#changes'}>
+              <TweetsFeedWidget data={data.filter(e => e.wasChanged)}/>
+          </TabPane>
+      </Container>
   );
 };

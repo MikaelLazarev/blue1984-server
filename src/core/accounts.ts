@@ -1,8 +1,46 @@
-import {Tweet} from "./tweet";
+import { Tweet } from "./tweet";
 
 export interface Account {
   id: string;
   bluID: string;
+  changed?: number;
+  cached?: number;
+  lastCached?: string;
+
+  screenName: string;
+  profileImage: string;
+  backgroundImage: string;
+
+  name: string;
+  bio: string;
+  userMentions: string[];
+  hashtags: string[];
+  urls: [];
+  location: string;
+  url: string;
+  joinDate: string;
+  tweetCount: number;
+  followingCount: number;
+  followerCount: number;
+  likeCount: number;
+}
+
+export interface TwitterProfileDTO {
+  screenName: string;
+  profileImage: string;
+  backgroundImage: string;
+  name: string;
+  bio: string;
+  userMentions: string[];
+  hashtags: string[];
+  urls: [];
+  location: string;
+  url: string;
+  joinDate: string;
+  tweetCount: number;
+  followingCount: number;
+  followerCount: number;
+  likeCount: number;
 }
 
 export interface AccountFull {
@@ -10,8 +48,6 @@ export interface AccountFull {
   bluID: string;
   tweets: Tweet[];
 }
-
-
 
 export interface AccountCreateDTO {
   id: string;
@@ -39,22 +75,23 @@ export const accountListDTOSchema = {
       type: "array",
       items: {
         type: "string",
-      }
+      },
     },
   },
 };
 
-
 export interface AccountsRepositoryI {
-  create(id: string): Promise<Account | undefined>;
-  findOne(id: string): Promise<Account | undefined>
+  create(dto: AccountCreateDTO): Promise<Account | undefined>;
+  update(newAccount: Account): Promise<void>;
+  findOne(id: string): Promise<Account | undefined>;
   list(): Promise<Account[] | undefined>;
 }
 
 export interface AccountsServiceI {
   create(dto: AccountCreateDTO): Promise<Account | undefined>;
   list(dto: AccountListDTO): Promise<Account[] | undefined>;
+  feed(dto: AccountListDTO) : Promise<Tweet[] | undefined>
   retrieve(id: string): Promise<AccountFull>;
-  startUpdate() : void;
-  stopUpdate() : void
+  startUpdate(): void;
+  stopUpdate(): void;
 }

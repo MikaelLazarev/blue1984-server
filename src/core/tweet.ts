@@ -25,26 +25,41 @@ export interface TweetsFeed {
   data: Tweet[];
 }
 
+function check<T>(name: string, a: T, b: T): boolean {
+  if (a !== b) {
+    console.log(`${name} changed ${a} != ${b} `);
+    return true;
+  }
+  return false;
+}
 
-
-export function isEqual(a: Tweet, b: Tweet) : boolean {
-  if (a.screenName !== b.screenName ||
-      a.text !== b.text ||
-      a.time !== b.time ||
-      a.urls !== b.urls ||
-      a.hashtags !== b.hashtags ||
-      a.images !== b.images) return false;
+export function isEqual(a: Tweet, b: Tweet): boolean {
+  if (
+    check("screen name", a.screenName, b.screenName) ||
+    check("text", a.text, b.text) ||
+    check("time", a.time, b.time) ||
+    check("urls", JSON.stringify(a.urls), JSON.stringify(b.urls)) ||
+    check("hashtags", JSON.stringify(a.hashtags), JSON.stringify(b.hashtags)) ||
+    check("images", JSON.stringify(a.images), JSON.stringify(b.images))
+  ) {
+    return false;
+  }
   return true;
 }
 
+export function tweetComparator(a: Tweet, b: Tweet): number {
+  if (a.time > b.time) return -1;
+  return 1;
+}
+
 export interface TweetsRepositoryI {
-  findOne(bluID: string, id: string) : Promise<Tweet | undefined>;
+  findOne(bluID: string, id: string): Promise<Tweet | undefined>;
   create(bluID: string, item: Tweet): Promise<string | undefined>;
   list(bluID: string): Promise<Tweet[] | undefined>;
   update(bluID: string, item: Tweet): Promise<void>;
 }
 
 export interface TweetsServiceI {
-  retrieve(bluID: string, id: string)  : Promise<Tweet | undefined>;
-  update(twitterID: string, blueID: string): Promise<void>;
+  retrieve(bluID: string, id: string): Promise<Tweet | undefined>;
+  update(twitterID: string, blueID: string): Promise<number>;
 }

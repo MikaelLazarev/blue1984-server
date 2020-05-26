@@ -9,7 +9,6 @@
 import * as accounts from "./accounts/actions";
 import * as profile from "./profile/actions";
 import * as tweets from "./tweets/actions";
-import * as tweetsfeed from "./tweetsfeed/actions";
 import * as operations from "./operations/actions";
 
 export default {
@@ -17,5 +16,4 @@ export default {
   profile,
   operations,
   tweets,
-  tweetsfeed
 };

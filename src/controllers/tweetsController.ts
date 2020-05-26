@@ -16,7 +16,7 @@ export class TweetsController {
       const blu_id = req.params.blu_id;
       const id = req.params.id;
       if (id === undefined) {
-        console.log(id)
+        console.log(id);
         return res.status(400).send("No id");
       }
 

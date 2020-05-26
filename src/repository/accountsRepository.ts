@@ -1,7 +1,6 @@
 import { Account, AccountsRepositoryI } from "../core/accounts";
 import { BluzelleHelper } from "./bluzelleHelper";
 import { injectable } from "inversify";
-import { v4 as uuidv4 } from "uuid";
 
 @injectable()
 export class AccountsRepository implements AccountsRepositoryI {
@@ -11,26 +10,19 @@ export class AccountsRepository implements AccountsRepositoryI {
     this._blu = new BluzelleHelper<Account>("Blu1984");
   }
 
-  create(id: string): Promise<Account | undefined> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const newAccount: Account = {
-          id,
-          bluID: uuidv4(),
-        };
+  async create(newAccount: Account): Promise<Account | undefined> {
+    const existingAcc = await this._blu.findOne(newAccount.id);
 
-        const existingAcc = await this._blu.findOne(id);
+    if (existingAcc !== undefined) {
+      return existingAcc;
+    }
 
-        if (existingAcc !== undefined) {
-          return resolve(existingAcc);
-        }
+    await this._blu.create(newAccount.id, newAccount);
+    return newAccount;
+  }
 
-        await this._blu.create(id, newAccount);
-        resolve(newAccount);
-      } catch (e) {
-        reject(e);
-      }
-    });
+  update(newAccount: Account) : Promise<void> {
+    return this._blu.update(newAccount.id, newAccount);
   }
 
   findOne(id: string): Promise<Account | undefined> {
@@ -38,7 +30,6 @@ export class AccountsRepository implements AccountsRepositoryI {
   }
 
   list(): Promise<Account[] | undefined> {
-    console.log("UUID", this._blu.uuid);
     return this._blu.list();
   }
 }

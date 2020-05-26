@@ -68,6 +68,30 @@ export class AccountsController {
     };
   }
 
+  feed() {
+    return async (req: Request, res: Response) => {
+      const dto: AccountListDTO = {
+        accounts: req.body.accounts,
+      };
+
+      if (!this._listDTOValidate(dto)) {
+        console.log("Incorrect request", dto);
+        return res.status(400).send("Incorrect request");
+      }
+
+      try {
+        const result = await this._service.feed(dto);
+        console.log(result);
+        res.status(200).json(result);
+      } catch (e) {
+        console.log(e);
+        res.status(400).send(e);
+      }
+
+    };
+  }
+
+
   retrieve() {
     return async (req: Request, res: Response) => {
       const id = req.params.id;

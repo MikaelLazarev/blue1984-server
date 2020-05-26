@@ -16,6 +16,7 @@ import { useHistory } from "react-router";
 import TabsBar from "../../components/PageHeader/TabsBar";
 import { TabPane } from "../../components/PageHeader/TabPane";
 import {TweetsFeedWidget} from "../Tweets/TweetsFeedWidget";
+import {InfoWidget} from "../../screens/Accounts/InfoWidget";
 
 interface AccountDetailsProps {
   data: Account;
@@ -25,15 +26,13 @@ export const DetailsView: React.FC<AccountDetailsProps> = ({
   data,
 }: AccountDetailsProps) => {
   const history = useHistory();
-  const tabs: string[] = ['Info', 'Milestones'];
+  const tabs: string[] = ['Feed', 'Changed'];
 
   return (
     <Container className="pd-x-0 pd-lg-x-10 pd-xl-x-0 m-t-20-f pd-t-30-f">
-      <TabsBar tabs={tabs} selected={'info'} />
-      <TabPane hash={'#info'}>
-          <TweetsFeedWidget data={data.tweets || []} />
-      </TabPane>
-      <TabPane hash={'#milestones'}>
+      <TabsBar tabs={tabs} selected={'#feed'} />
+      <TabPane hash={'#feed'}>
+          <InfoWidget data={data}/>
       </TabPane>
     </Container>
   );

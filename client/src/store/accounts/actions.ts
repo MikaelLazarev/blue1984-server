@@ -81,7 +81,7 @@ export const getList = (
   return action;
 };
 
-const getAccountsFromStorage = (): string[] => {
+export const getAccountsFromStorage = (): string[] => {
   let accountsList: string[] = [];
   const savedAccountsStr = localStorage.getItem("accounts");
   if (savedAccountsStr !== null) {

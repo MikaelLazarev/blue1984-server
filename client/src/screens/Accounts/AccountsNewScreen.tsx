@@ -15,7 +15,7 @@ import { FormView } from "../../containers/Accounts/FormView";
 
 import { STATUS } from "../../utils/status";
 import { RootState } from "../../store";
-import { Account } from "../../core/accounts";
+import {Account, AccountCreateDTO} from "../../core/accounts";
 
 import actions from "../../store/actions";
 
@@ -55,11 +55,10 @@ export const AccountsNewScreen: React.FC = () => {
     },
   ];
 
-  const data: Account = {
+  const data: AccountCreateDTO = {
     id: "",
-    bluID: "",
   };
-  const onSubmit = (values: Account) => {
+  const onSubmit = (values: AccountCreateDTO) => {
     setIsSubmitted(true);
     const newHash = Date.now().toString();
     setHash(newHash);

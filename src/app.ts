@@ -52,6 +52,7 @@ export function createApp(config: ConfigParams): Promise<Application> {
 
     // Accounts Controller
     app.post("/api/accounts/list/", accountsController.list());
+    app.post("/api/accounts/feed/", accountsController.feed());
     app.post("/api/accounts/", accountsController.create());
     app.get("/api/accounts/start", accountsController.startUpdates());
     app.get("/api/accounts/stop", accountsController.stopUpdates());

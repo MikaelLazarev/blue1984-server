@@ -28,106 +28,78 @@ export class BluzelleHelper<T> {
     return this._uuid;
   }
 
-  findOne(id: string): Promise<T | undefined> {
-    return new Promise<T | undefined>(async (resolve, reject) => {
-      try {
-        if (BluzelleHelper._cache.has(this.getItemHash(id))) {
-          return resolve(BluzelleHelper._cache.get<T>(this.getItemHash(id)));
-        }
-        const api = await this.getBluzelle();
-        const has = await api.has(id)
-        if (!has) {
-          resolve(undefined);
-        }
-        const dataStr = await api.read(id);
-        resolve(JSON.parse(dataStr));
-      } catch (e) {
-        reject(e);
+  async findOne(id: string): Promise<T | undefined> {
+
+    if (BluzelleHelper._cache.has(this.getItemHash(id))) {
+      console.log("got from cache");
+      return BluzelleHelper._cache.get<T>(this.getItemHash(id));
+    }
+    const api = await this.getBluzelle();
+    const has = await api.has(id);
+    if (!has) {
+      return undefined;
+    }
+    const dataStr = await api.read(id);
+    return JSON.parse(dataStr);
+  }
+
+  async list(): Promise<T[] | undefined> {
+    if (BluzelleHelper._cache.has(this.getLishHash())) {
+      return BluzelleHelper._cache.get<T[]>(this.getLishHash());
+    }
+
+    const api = await this.getBluzelle();
+
+    const dataStr = await api.keyValues();
+
+    const data = dataStr.map(({ key, value }) => {
+      BluzelleHelper._cache.set(this.getItemHash(key), JSON.parse(value));
+      return JSON.parse(value);
+    });
+
+    BluzelleHelper._cache.set(this.getLishHash(), data);
+    return data;
+  }
+
+  async create(key: string, item: T): Promise<string | undefined> {
+    const api = await this.getBluzelle();
+    await api.create(key, JSON.stringify(item), BluzelleHelper.gasPrice);
+    BluzelleHelper._cache.del(this.getItemHash(key));
+    BluzelleHelper._cache.del(this.getLishHash());
+    return key;
+  }
+
+  async insert(item: T): Promise<string | undefined> {
+    const key = await this.create(uuidv4(), item);
+    if (key === undefined) throw "Cant create an element";
+    BluzelleHelper._cache.set(this.getItemHash(key), item);
+    BluzelleHelper._cache.del(this.getLishHash());
+    return key;
+  }
+
+  async update(key: string, item: T): Promise<void> {
+    const api = await this.getBluzelle();
+    await api.update(key, JSON.stringify(item), BluzelleHelper.gasPrice);
+    BluzelleHelper._cache.set(this.getItemHash(key), item);
+    BluzelleHelper._cache.del(this.getLishHash());
+  }
+
+  private async getBluzelle(): Promise<API> {
+    if (this._api === undefined) {
+      this._api = await bluzelle(this._config);
+
+      if (this._api === undefined) {
+        throw "Wrong mnemonic";
       }
-    });
-  }
 
-  list(): Promise<T[] | undefined> {
-    return new Promise<T[] | undefined>(async (resolve, reject) => {
-      try {
-        console.log("CACHE", BluzelleHelper._cache.keys())
-        if (BluzelleHelper._cache.has(this.getLishHash())) {
-          console.log("$$$$$$ =>>>>> Getting from cache", this.getLishHash())
-          return resolve(BluzelleHelper._cache.get<T[]>(this.getLishHash()));
-        }
+      const account = await this._api.account();
 
-        const api = await this.getBluzelle();
-
-        const dataStr = await api.keyValues();
-        const data = dataStr.map(({ key, value }) => {
-          BluzelleHelper._cache.set(this.getItemHash(key), JSON.parse(value));
-          return JSON.parse(value);
-        });
-
-        BluzelleHelper._cache.set(this.getLishHash(), data);
-        resolve(data);
-      } catch (e) {
-        reject(e);
+      if (account.address === "") {
+        throw "Wrong mnemonic";
       }
-    });
-  }
+    }
 
-  create(key: string, item: T): Promise<string | undefined> {
-    return new Promise<string | undefined>(async (resolve, reject) => {
-      const api = await this.getBluzelle();
-      await api.create(key, JSON.stringify(item), BluzelleHelper.gasPrice);
-      BluzelleHelper._cache.del(this.getItemHash(key));
-      BluzelleHelper._cache.del(this.getLishHash());
-      resolve(key);
-    });
-  }
-
-  insert(item: T): Promise<string | undefined> {
-    return new Promise<string | undefined>(async (resolve, reject) => {
-      const key = await this.create(uuidv4(), item);
-      if (key === undefined) throw "Cant create an element";
-      BluzelleHelper._cache.set(this.getItemHash(key), item);
-      BluzelleHelper._cache.del(this.getLishHash());
-    });
-  }
-
-  update(key: string, item: T): Promise<void> {
-    return new Promise<void>(async (resolve, reject) => {
-      try {
-        const api = await this.getBluzelle();
-        await api.update(key, JSON.stringify(item), BluzelleHelper.gasPrice);
-        BluzelleHelper._cache.set(this.getItemHash(key), item);
-        BluzelleHelper._cache.del(this.getLishHash());
-        resolve();
-      } catch (e) {
-        reject(e);
-      }
-    });
-  }
-
-  private getBluzelle(): Promise<API> {
-    return new Promise<API>(async (resolve, reject) => {
-      try {
-        console.log(this._config)
-        if (this._api === undefined) {
-          this._api = await bluzelle(this._config);
-
-          if (this._api === undefined) {
-            reject("Wrong mnemonic");
-          }
-
-          const account = await this._api.account();
-
-          if (account.address === "") {
-            reject("Wrong mnemonic");
-          }
-        }
-
-        resolve(this._api);
-      } catch (e) {
-        reject(e);
-      }
-    });
+    return this._api;
   }
 
   private getLishHash(): string {

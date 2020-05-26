@@ -1,8 +1,13 @@
-import {isEqual, Tweet, TweetsRepositoryI, TweetsServiceI} from "../core/tweet";
+import {
+  isEqual,
+  Tweet,
+  TweetsRepositoryI,
+  TweetsServiceI,
+} from "../core/tweet";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../types";
 // @ts-ignore
-import { TimelineStream } from 'scrape-twitter';
+import { TimelineStream } from "scrape-twitter";
 
 @injectable()
 export class TweetsService implements TweetsServiceI {
@@ -14,29 +19,59 @@ export class TweetsService implements TweetsServiceI {
     this._repository = repository;
   }
 
-  retrieve(bluID: string, id: string)  : Promise<Tweet | undefined> {
+
+
+  retrieve(bluID: string, id: string): Promise<Tweet | undefined> {
     return this._repository.findOne(bluID, id);
   }
 
+  update(twitterID: string, blueID: string): Promise<number> {
+    return new Promise<number>(async (resolve) => {
+      console.log(`Updating ${twitterID} with ${blueID}`);
+      const scannedTweets: Tweet[] = [];
+      const timeline = new TimelineStream(twitterID);
 
-  update(twitterID: string, blueID: string): Promise<void> {
-    return new Promise<void>(async (resolve, reject) => {
-      const timeline = new TimelineStream(twitterID)
-      timeline.on('data', async (dto: Tweet) => {
-        const found = await this._repository.findOne(blueID, dto.id);
-        if (found === undefined) {
+      let total = 0;
+      let startTime = Date.now();
+
+      const createList: Tweet[] = [];
+      const updateList: Tweet[] = [];
+      const items = await this._repository.list(blueID);
+      if (items === undefined) return resolve(0);
+
+      timeline.on("data", (dto: Tweet) => {
+        total++;
+        const found = items.filter((e) => e.id === dto.id);
+        if (found.length === 0) {
           dto.wasChanged = false;
-          return this._repository.create(blueID, dto);
+          createList.push(dto);
+        } else {
+          if (!isEqual(found[0], dto)) {
+            dto.wasChanged = true;
+            updateList.push(dto);
+            console.log("For", dto.id);
+          }
+        }
+      });
+
+      timeline.on("end", async () => {
+        console.log("Insert :", createList.length);
+        console.log("Update :", updateList.length);
+        console.log("Total :", total);
+
+        for (let dto of createList) {
+          // Get list for caching
+          startTime = Date.now();
+          try {
+            console.log(await this._repository.create(blueID, dto));
+          } catch (e) {
+            console.log(`Error, cant inset ${dto}. Error: ${e}`);
+          }
+          console.log(`Insert one for ${Date.now() - startTime} ms`);
         }
 
-        if (!isEqual(found, dto)) {
-          dto.wasChanged = true;
-          return this._repository.update(blueID, dto);
-        }
-
-      })
-      timeline.on('end', () => console.log("End"))
-
-    })
+        resolve(scannedTweets.length);
+      });
+    });
   }
 }

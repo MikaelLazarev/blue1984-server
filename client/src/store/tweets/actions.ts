@@ -8,17 +8,43 @@
 
 import { endpoint, TWEETS_PREFIX } from "./";
 
-import {
-  createDataLoaderDetailActions,
-  createDataLoaderListActions,
-} from "../dataloader/actions";
 import {ThunkAction} from "redux-thunk";
 import {RootState} from "../index";
 import {Action} from "redux";
-import actions from "../actions";
-import {Tweet} from "../../core/tweet";
+import {updateStatus} from "../operations/actions";
+import {STATUS} from "../../utils/status";
+import {createAction} from "redux-api-middleware";
+import {getFullAPIAddress} from "../../utils/api";
+import {LIST_FAILURE, LIST_REQUEST, LIST_SUCCESS} from "../dataloader";
+import {getAccountsFromStorage} from "../accounts/actions";
 
-export const getDetails = createDataLoaderDetailActions(
-  endpoint + ":id/",
-  TWEETS_PREFIX
-);
+export const getFeed = (
+    hash: string
+): ThunkAction<void, RootState, unknown, Action<string>> => async (
+    dispatch
+) => {
+  const accounts = getAccountsFromStorage();
+  dispatch(updateStatus(hash || "0", STATUS.UPDATING));
+
+  const action = await dispatch(
+      createAction({
+        endpoint: getFullAPIAddress(endpoint),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({accounts}),
+        types: [
+          TWEETS_PREFIX + LIST_REQUEST,
+          TWEETS_PREFIX + LIST_SUCCESS,
+          TWEETS_PREFIX + LIST_FAILURE,
+        ],
+      })
+  );
+
+  if (action.error) {
+    dispatch(updateStatus(hash || "0", STATUS.FAILURE, action.payload.message));
+  } else {
+    dispatch(updateStatus(hash || "0", STATUS.SUCCESS));
+  }
+
+  return action;
+};

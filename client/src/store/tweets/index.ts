@@ -7,4 +7,4 @@
  */
 // HYPOTHESES
 export const TWEETS_PREFIX = 'TWEETS@@';
-export const endpoint = '/api/tweets/';
+export const endpoint = '/api/accounts/feed/';

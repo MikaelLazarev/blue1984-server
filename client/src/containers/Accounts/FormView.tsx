@@ -12,18 +12,15 @@ import {
   FormikForm,
   FormikFormViewProps,
 } from "../../components/Forms/FormikForm";
-import { Account } from "../../core/accounts";
+import { AccountCreateDTO} from "../../core/accounts";
 import { Loading } from "../../components/Loading";
-import {TypeaheadOptions} from "../../components/Forms/AutoCompleteField";
-import {useDispatch, useSelector} from "react-redux";
-import {RootState} from "../../store";
-import actions from '../../store/actions'
+
 
 const formSchema = yup.object({
   id: yup.string().required().min(3),
 });
 
-interface FormViewProfileProps extends FormikFormViewProps<Account> {}
+interface FormViewProfileProps extends FormikFormViewProps<AccountCreateDTO> {}
 
 export const FormView: React.FC<FormViewProfileProps> = ({
   data,
