@@ -43,6 +43,7 @@ export const AccountsList: React.FC<DataScreenComponentProps<Account[]>> = ({
         <td className="tx-medium text-center tx-normal" onClick={() => onPressed(h.id)}>{h.lastCached ? toHumanDate(h.lastCached) : '-'}</td>
         <td className="tx-medium text-center tx-normal" onClick={() => onPressed(h.id)}>{h.cached  || '-'}</td>
         <td className="tx-medium text-center tx-normal" onClick={() => onPressed(h.id)}>{h.changed  || '-'}</td>
+        <td className="tx-medium text-center tx-normal" onClick={() => onPressed(h.id)}>{h.deleted  || '-'}</td>
         <td className="tx-medium text-center tx-normal"><Button
             className="btn-sm pd-x-15 btn-brand-01 btn-uppercase mg-l-10"
             onClick={() => onDelete(h.id)}
@@ -73,6 +74,7 @@ export const AccountsList: React.FC<DataScreenComponentProps<Account[]>> = ({
 
 
                   <th>Total changed</th>
+                  <th>Total deleted</th>
                   <th></th>
                 </tr>
               </thead>

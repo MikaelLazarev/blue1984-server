@@ -6,6 +6,7 @@ export interface ConfigParams {
   bluzelle_mnemonic: string;
   bluzelle_endpoint: string;
   bluzelle_chain_id: string;
+  mainDB: string;
 }
 
 const configSchema = {
@@ -15,6 +16,7 @@ const configSchema = {
     "bluzelle_mnemonic",
     "bluzelle_endpoint",
     "bluzelle_chain_id",
+      "mainDB",
   ],
 };
 
@@ -33,6 +35,7 @@ export function getConfig(): ConfigParams {
         bluzelle_mnemonic: process.env.BLUZELLE_MNEMONIC || "",
         bluzelle_endpoint: process.env.BLUZELLE_ENDPOINT || "",
         bluzelle_chain_id: process.env.BLUZELLE_CHAIN_ID || "",
+        mainDB: process.env.MAIN_DB || "Bluzelle1984",
       };
     }
 

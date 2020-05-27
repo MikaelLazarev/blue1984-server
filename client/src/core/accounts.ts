@@ -3,6 +3,7 @@ import {Tweet} from "../../../src/core/tweet";
 export interface Account {
   id: string;
   bluID: string;
+  deleted?: number;
   changed?: number;
   cached?: number;
   lastCached?: string;

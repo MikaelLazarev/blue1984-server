@@ -35,6 +35,7 @@ export class AccountsService implements AccountsServiceI {
     this._repository = repository;
     this._tweetsService = tweetsService;
     this._tweetsRepository = tweetsRepository;
+    this.startUpdate();
   }
 
   async create(dto: AccountCreateDTO): Promise<Account | undefined> {
@@ -84,7 +85,7 @@ export class AccountsService implements AccountsServiceI {
   }
 
   startUpdate(): void {
-    this._updater = setTimeout(() => this.update(), 100);
+    this._updater = setTimeout(() => this.update(), 1000);
   }
 
   stopUpdate(): void {
@@ -102,10 +103,16 @@ export class AccountsService implements AccountsServiceI {
     }
 
     for (let acc of accounts) {
+
+
+      const updated = await this._tweetsService.update(acc.id, acc.bluID);
+
       const tweets = (await this._tweetsRepository.list(acc.bluID)) || [];
       const changed = tweets.filter((e) => e.wasChanged).length;
       const lastCached =
-        tweets.length === 0 ? "-" : tweets.sort(tweetComparator)[0].time;
+          tweets.length === 0 ? "-" : tweets.sort(tweetComparator)[0].time;
+
+      const deleted = tweets.filter((e) => e.wasDeleted).length;
 
       console.log("SIZE:::", tweets.length);
 
@@ -115,13 +122,13 @@ export class AccountsService implements AccountsServiceI {
         ...acc,
         ...profile,
         changed,
+        deleted,
         lastCached,
         cached: tweets.length,
       };
 
       await this._repository.update(newAccount);
 
-      const updated = await this._tweetsService.update(acc.id, acc.bluID);
       console.log(`Updated ${updated} tweets for ${acc.id}`);
     }
     this._updater = setTimeout(() => this.update(), 100000);

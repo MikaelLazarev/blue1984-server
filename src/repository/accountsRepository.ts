@@ -1,13 +1,14 @@
 import { Account, AccountsRepositoryI } from "../core/accounts";
 import { BluzelleHelper } from "./bluzelleHelper";
 import { injectable } from "inversify";
+import config from "../config/config";
 
 @injectable()
 export class AccountsRepository implements AccountsRepositoryI {
   private _blu: BluzelleHelper<Account>;
 
   constructor() {
-    this._blu = new BluzelleHelper<Account>("Blu1984");
+    this._blu = new BluzelleHelper<Account>(config.mainDB);
   }
 
   async create(newAccount: Account): Promise<Account | undefined> {

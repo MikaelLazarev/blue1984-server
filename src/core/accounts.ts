@@ -4,6 +4,7 @@ export interface Account {
   id: string;
   bluID: string;
   changed?: number;
+  deleted?: number;
   cached?: number;
   lastCached?: string;
 

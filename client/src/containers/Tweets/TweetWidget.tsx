@@ -18,6 +18,11 @@ interface TweetWidgetProps {
 }
 
 export const TweetWidget: React.FC<TweetWidgetProps> = ({ data }) => {
+
+    let backColor = "#FFF";
+    if (data.wasChanged) backColor = "#b3b37b";
+    if (data.wasDeleted) backColor = "#ff5858";
+
   return (
     <div style={{ marginBottom: "20px" }}>
       <TweetComponent
@@ -32,6 +37,7 @@ export const TweetWidget: React.FC<TweetWidgetProps> = ({ data }) => {
           retweets: data.retweetCount,
           likes: data.favoriteCount,
         }}
+        style={{backgroundColor: backColor}}
       />
     </div>
   );

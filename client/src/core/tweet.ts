@@ -18,6 +18,7 @@ export interface Tweet {
   replyCount: number;
   retweetCount: number;
   wasChanged: boolean;
+  wasDeleted: boolean;
 }
 
 

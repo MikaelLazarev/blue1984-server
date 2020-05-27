@@ -36,18 +36,22 @@ export class TweetsService implements TweetsServiceI {
 
       const createList: Tweet[] = [];
       const updateList: Tweet[] = [];
+      const fromTwitter: Tweet[] = [];
       const items = await this._repository.list(blueID);
       if (items === undefined) return resolve(0);
 
       timeline.on("data", (dto: Tweet) => {
         total++;
+        fromTwitter.push(dto);
         const found = items.filter((e) => e.id === dto.id);
         if (found.length === 0) {
           dto.wasChanged = false;
+          dto.wasDeleted = false;
           createList.push(dto);
         } else {
           if (!isEqual(found[0], dto)) {
             dto.wasChanged = true;
+            dto.wasDeleted = false;
             updateList.push(dto);
             console.log("For", dto.id);
           }
@@ -57,13 +61,42 @@ export class TweetsService implements TweetsServiceI {
       timeline.on("end", async () => {
         console.log("Insert :", createList.length);
         console.log("Update :", updateList.length);
+        console.log("Deleted :", items.length - fromTwitter.length);
         console.log("Total :", total);
+
+        const fromTwitterMap = new Set<string>();
+        fromTwitter.forEach(e=> fromTwitterMap.add(e.id));
+        const deletedList = items.filter(elm => !fromTwitterMap.has(elm.id))
 
         for (let dto of createList) {
           // Get list for caching
           startTime = Date.now();
           try {
             console.log(await this._repository.create(blueID, dto));
+          } catch (e) {
+            console.log(`Error, cant inset ${dto}. Error: ${e}`);
+          }
+          console.log(`Insert one for ${Date.now() - startTime} ms`);
+        }
+
+        for (let dto of deletedList) {
+          // Get list for caching
+          startTime = Date.now();
+          try {
+            dto.wasDeleted = true;
+            console.log(await this._repository.update(blueID, dto));
+          } catch (e) {
+            console.log(`Error, cant inset ${dto}. Error: ${e}`);
+          }
+          console.log(`Insert one for ${Date.now() - startTime} ms`);
+        }
+
+        for (let dto of updateList) {
+          // Get list for caching
+          startTime = Date.now();
+          try {
+            dto.wasChanged = true;
+            console.log(await this._repository.update(blueID, dto));
           } catch (e) {
             console.log(`Error, cant inset ${dto}. Error: ${e}`);
           }

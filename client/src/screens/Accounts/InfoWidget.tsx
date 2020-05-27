@@ -27,11 +27,7 @@ export const InfoWidget: React.FC<InfoWidgetProps> = ({ data }) => {
   if (data === undefined) return  <Loading/>
 
   return (
-    <Row style={{ marginTop: "20px" }}>
-      <Col lg={8} md={8} xs={12}>
-        <TweetsFeedWidget data={data.tweets || []}/>
-      </Col>
-      <Col lg={4} md={4} xs={12}>
+
         <Card>
           <Card.Header className="card-header" style={{backgroundColor: '#F0F0F0'}}>
             <h6 className="mg-b-0" >Info</h6>
@@ -47,7 +43,6 @@ export const InfoWidget: React.FC<InfoWidgetProps> = ({ data }) => {
 
           </Card.Body>
         </Card>
-      </Col>
-    </Row>
+
   );
 };

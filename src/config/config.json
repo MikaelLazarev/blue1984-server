@@ -2,6 +2,7 @@
   "port": 4000,
   "bluzelle_mnemonic": "around buzz diagram captain obtain detail salon mango muffin brother morning jeans display attend knife carry green dwarf vendor hungry fan route pumpkin car",
   "bluzelle_endpoint": "http://testnet.public.bluzelle.com:1317",
-  "bluzelle_chain_id": "bluzelle"
+  "bluzelle_chain_id": "bluzelle",
+  "mainDB": "Bluzelle1984"
 }
 

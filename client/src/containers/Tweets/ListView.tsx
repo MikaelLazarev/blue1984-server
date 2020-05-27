@@ -22,7 +22,7 @@ export const TweetsList: React.FC<DataScreenComponentProps<Tweet[]>> = ({
 }) => {
 
   const history = useHistory();
-  const tabs: string[] = ['Feed', 'Changed'];
+  const tabs: string[] = ['Feed', 'Changed', 'Deleted'];
 
   return (
       <Container className="pd-x-0 pd-lg-x-10 pd-xl-x-0 m-t-20-f pd-t-30-f">
@@ -30,8 +30,11 @@ export const TweetsList: React.FC<DataScreenComponentProps<Tweet[]>> = ({
         <TabPane hash={'#feed'}>
           <TweetsFeedWidget data={data}/>
         </TabPane>
-          <TabPane hash={'#changes'}>
+          <TabPane hash={'#changed'}>
               <TweetsFeedWidget data={data.filter(e => e.wasChanged)}/>
+          </TabPane>
+          <TabPane hash={'#deleted'}>
+              <TweetsFeedWidget data={data.filter(e => e.wasDeleted)}/>
           </TabPane>
       </Container>
   );
