@@ -10,6 +10,7 @@ import errorHandler from "./middleware/errorHandler";
 import { AccountsController } from "./controllers/accountsController";
 import { TweetsController } from "./controllers/tweetsController";
 import { BluzelleHelper } from "./repository/bluzelleHelper";
+import * as path from "path";
 
 export function createApp(config: ConfigParams): Promise<Application> {
   return new Promise<Application>(async (resolve) => {
@@ -42,14 +43,6 @@ export function createApp(config: ConfigParams): Promise<Application> {
     );
 
 
-
-    app.get("/", (req, res) => {
-      console.log(req);
-      res.status(200).send("It works!");
-    });
-
-
-
     // Accounts Controller
     app.post("/api/accounts/list/", accountsController.list());
     app.post("/api/accounts/feed/", accountsController.feed());
@@ -58,7 +51,10 @@ export function createApp(config: ConfigParams): Promise<Application> {
     app.get("/api/accounts/stop", accountsController.stopUpdates());
     app.get("/api/accounts/:id/", accountsController.retrieve());
 
-
+    app.use(express.static(path.join(__dirname, '../client/build/')))
+    app.get('*', (req,res) =>{
+      res.sendFile(path.join(__dirname+'/client/build/index.html'));
+    });
     // Tweets Controller
     app.get("/api/tweets/:blu_id/:id/", tweetsController.retrieve());
 

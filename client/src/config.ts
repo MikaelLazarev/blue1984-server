@@ -9,4 +9,4 @@
 export const BACKEND_ADDR =
   process.env.NODE_ENV === "development"
     ? "http://localhost:4000"
-    : "https://nearcontracts-server.herokuapp.com";
+    : window.location.protocol + "//" + window.location.host;
