@@ -3,8 +3,15 @@ interface URL {
   url: string;
 }
 
+interface User {
+  avatar: string,
+  nickname: string,
+  name: string,
+}
+
 export interface Tweet {
   id: string;
+  user?: User;
   screenName: string;
   text: string;
   time: string;

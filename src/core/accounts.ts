@@ -1,4 +1,4 @@
-import { Tweet } from "./tweet";
+import {Tweet, TweetsFull} from "./tweet";
 
 export interface Account {
   id: string;
@@ -47,7 +47,7 @@ export interface TwitterProfileDTO {
 export interface AccountFull {
   id: string;
   bluID: string;
-  tweets: Tweet[];
+  tweets: TweetsFull[];
 }
 
 export interface AccountCreateDTO {

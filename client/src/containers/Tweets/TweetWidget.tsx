@@ -28,9 +28,9 @@ export const TweetWidget: React.FC<TweetWidgetProps> = ({ data }) => {
       <TweetComponent
         config={{
           user: {
-            avatar: "",
-            nickname: data.screenName,
-            name: data.screenName,
+            avatar: "https://pbs.twimg.com/profile_images/633849199763656706/PLWdxCam_400x400.jpg",
+            nickname: data.user?.nickname,
+            name: data.user?.name,
           },
           text: data.text,
           date: data.time,

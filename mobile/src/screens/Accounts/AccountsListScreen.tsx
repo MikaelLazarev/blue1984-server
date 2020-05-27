@@ -7,7 +7,7 @@
  */
 import React, {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {AccountsList} from '../../containers/Accounts/ListView';
+import {AccountList} from '../../containers/Accounts/ListView';
 import {RootState} from '../../store';
 import actions from '../../store/actions';
 import {DataScreen} from '../../components/DataScreen';
@@ -26,16 +26,16 @@ export const AccountsListScreen: React.FC = () => {
 
   const {data, status} = useSelector((state: RootState) => state.accounts.List);
 
+  console.log("HELLOO!", data, status)
+
   const onSelect = (id: string) => navigation.navigate('AccountDetails', {id});
 
   return (
-    <div className="content content-fixed">
       <DataScreen
         data={data}
         status={status}
-        component={AccountsList}
+        component={AccountList}
         onSelect={onSelect}
       />
-    </div>
   );
 };

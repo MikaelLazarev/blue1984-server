@@ -57,9 +57,11 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'flex-start',
+    height: '100%',
+    marginBottom: 0,
+    padding: 0,
   },
   scrollContainer: {
     width: '100%',
-    marginBottom: 20,
   },
 });

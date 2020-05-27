@@ -11,6 +11,7 @@ import { AccountsController } from "./controllers/accountsController";
 import { TweetsController } from "./controllers/tweetsController";
 import { BluzelleHelper } from "./repository/bluzelleHelper";
 import * as path from "path";
+import {DbController} from "./controllers/dbController";
 
 export function createApp(config: ConfigParams): Promise<Application> {
   return new Promise<Application>(async (resolve) => {
@@ -42,6 +43,7 @@ export function createApp(config: ConfigParams): Promise<Application> {
       TYPES.TweetsController
     );
 
+    const dbController = new DbController();
 
     // Accounts Controller
     app.post("/api/accounts/list/", accountsController.list());
@@ -50,6 +52,7 @@ export function createApp(config: ConfigParams): Promise<Application> {
     app.get("/api/accounts/start", accountsController.startUpdates());
     app.get("/api/accounts/stop", accountsController.stopUpdates());
     app.get("/api/accounts/:id/", accountsController.retrieve());
+    app.get("/api/stat/", dbController.retrieve());
 
     app.use(express.static(path.join(__dirname, '../client/build/')))
     app.get('*', (req,res) =>{

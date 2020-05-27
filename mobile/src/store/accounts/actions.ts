@@ -23,6 +23,7 @@ import { STATUS } from "../../utils/status";
 import {getApiById, getFullAPIAddress} from "../../utils/api";
 import { createAction } from "redux-api-middleware";
 import * as actionTypes from "../dataloader";
+import AsyncStorage from "@react-native-community/async-storage";
 
 const addAccountAction = createDataLoaderCreateUpdateDataAction(
   endpoint,
@@ -36,15 +37,17 @@ export const addNewAccount = (
 ): ThunkAction<void, RootState, unknown, Action<string>> => async (
   dispatch
 ) => {
+
+console.log("IDDDDDQ", id);
   const action = await dispatch(addAccountAction("new", { id }, hash));
   console.log(action);
 
-  const savedAccounts = getAccountsFromStorage();
+  const savedAccounts = await getAccountsFromStorage();
   let accountsList = new Set([id,
     ...savedAccounts
   ]);
 
-  localStorage.setItem(
+  await AsyncStorage.setItem(
     "accounts",
     JSON.stringify(Array.from(accountsList.values()))
   );
@@ -55,7 +58,9 @@ export const getList = (
 ): ThunkAction<void, RootState, unknown, Action<string>> => async (
   dispatch
 ) => {
-  const accounts = getAccountsFromStorage();
+  const accounts = await getAccountsFromStorage();
+
+  console.log("ACCCCC", accounts);
   dispatch(updateStatus(hash || "0", STATUS.UPDATING));
 
   const action = await dispatch(
@@ -81,9 +86,11 @@ export const getList = (
   return action;
 };
 
-export const getAccountsFromStorage = (): string[] => {
+export const  getAccountsFromStorage = async(): Promise<string[]> => {
   let accountsList: string[] = [];
-  const savedAccountsStr = localStorage.getItem("accounts");
+  //await AsyncStorage.clear();
+  const savedAccountsStr = await AsyncStorage.getItem("accounts");
+
   if (savedAccountsStr !== null) {
     const savedAccounts: string[] = JSON.parse(savedAccountsStr);
     accountsList = savedAccounts;
@@ -96,9 +103,11 @@ export const getDetails = createDataLoaderDetailActions(
   ACCOUNTS_PREFIX
 );
 
-export const removeAccount = (id: string, hash?: string) => {
-  const savedAccounts = getAccountsFromStorage();
+export const removeAccount = (id: string, hash?: string) : ThunkAction<void, RootState, unknown, Action<string>> => async (
+    dispatch
+) => {
+  const savedAccounts = await getAccountsFromStorage();
   const accountsList = savedAccounts.filter((e) => e != id);
-  localStorage.setItem("accounts", JSON.stringify(accountsList));
-  return updateStatus(hash || "0", STATUS.SUCCESS);
+  await AsyncStorage.setItem("accounts", JSON.stringify(accountsList));
+  dispatch(updateStatus(hash || "0", STATUS.SUCCESS));
 };

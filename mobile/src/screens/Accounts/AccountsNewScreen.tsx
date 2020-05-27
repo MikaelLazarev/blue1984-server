@@ -35,7 +35,7 @@ export const AccountsNewScreen: React.FC = () => {
     if (hash !== "0") {
       switch (operationStatus) {
         case STATUS.SUCCESS:
-          navigation.navigate(`/accounts/${id}`);
+          navigation.navigate('AccountDetails', {id} );
           break;
 
         case STATUS.FAILURE:
@@ -50,6 +50,9 @@ export const AccountsNewScreen: React.FC = () => {
     id: "",
   };
   const onSubmit = (values: AccountCreateDTO) => {
+
+    console.log("SUMMMMMIT", values);
+
     setIsSubmitted(true);
     const newHash = Date.now().toString();
     setHash(newHash);
@@ -59,8 +62,6 @@ export const AccountsNewScreen: React.FC = () => {
   };
 
   return (
-    <div className="content content-fixed">
       <FormView data={data} onSubmit={onSubmit} isSubmitted={isSubmitted} />
-    </div>
   );
 };

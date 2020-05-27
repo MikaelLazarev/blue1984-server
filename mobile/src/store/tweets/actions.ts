@@ -23,7 +23,7 @@ export const getFeed = (
 ): ThunkAction<void, RootState, unknown, Action<string>> => async (
     dispatch
 ) => {
-  const accounts = getAccountsFromStorage();
+  const accounts = await getAccountsFromStorage();
   dispatch(updateStatus(hash || "0", STATUS.UPDATING));
 
   const action = await dispatch(

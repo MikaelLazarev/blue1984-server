@@ -11,10 +11,12 @@ import accounts from './accounts/reducer'
 import operations from './operations/reducer'
 import profile from './profile/reducer'
 import tweets from "./tweets/reducer";
+import stat from "./stat/reducer";
 
 export default combineReducers({
   accounts,
   operations,
   profile,
   tweets,
+  stat,
 });

@@ -12,6 +12,7 @@ import { TYPES } from "../types";
 import {
   Tweet,
   tweetComparator,
+  TweetsFull,
   TweetsRepositoryI,
   TweetsServiceI,
 } from "../core/tweet";
@@ -64,13 +65,12 @@ export class AccountsService implements AccountsServiceI {
     const result: Tweet[] = [];
     if (accounts === undefined) return;
     for (let acc of accounts) {
-      const tweets = (await this._tweetsRepository.list(acc.bluID)) || [];
-      tweets.map((t) => result.push(t));
+      const accFull = (await this.retrieve(acc.id)) || [];
+      accFull.tweets.map((t) => result.push(t));
     }
 
     return result.sort(tweetComparator);
   }
-
 
   async retrieve(id: string): Promise<AccountFull> {
     const account = await this._repository.findOne(id);
@@ -78,9 +78,18 @@ export class AccountsService implements AccountsServiceI {
     if (account === undefined) throw "This account is not registered in system";
     const tweets = (await this._tweetsRepository.list(account.bluID)) || [];
 
+    const tweetsFull: TweetsFull[] = tweets.map((e) => ({
+      ...e,
+      user: {
+        name: account.name,
+        avatar: account.profileImage,
+        nickname: e.screenName,
+      },
+    }));
+
     return {
       ...account,
-      tweets: tweets.sort(tweetComparator),
+      tweets: tweetsFull.sort(tweetComparator),
     };
   }
 
@@ -103,14 +112,12 @@ export class AccountsService implements AccountsServiceI {
     }
 
     for (let acc of accounts) {
-
-
       const updated = await this._tweetsService.update(acc.id, acc.bluID);
 
       const tweets = (await this._tweetsRepository.list(acc.bluID)) || [];
       const changed = tweets.filter((e) => e.wasChanged).length;
       const lastCached =
-          tweets.length === 0 ? "-" : tweets.sort(tweetComparator)[0].time;
+        tweets.length === 0 ? "-" : tweets.sort(tweetComparator)[0].time;
 
       const deleted = tweets.filter((e) => e.wasDeleted).length;
 

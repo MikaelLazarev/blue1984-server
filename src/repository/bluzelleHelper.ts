@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { GasInfo } from "bluzelle/lib/GasInfo";
 import { BluzelleConfig } from "bluzelle/lib/BluzelleConfig";
 import NodeCache from "node-cache";
+import { Db } from "../core/db";
 
 export class BluzelleHelper<T> {
   private static _globalConfig: BluzelleConfig;
@@ -29,7 +30,6 @@ export class BluzelleHelper<T> {
   }
 
   async findOne(id: string): Promise<T | undefined> {
-
     if (BluzelleHelper._cache.has(this.getItemHash(id))) {
       console.log("got from cache");
       return BluzelleHelper._cache.get<T>(this.getItemHash(id));
@@ -50,7 +50,9 @@ export class BluzelleHelper<T> {
 
     const api = await this.getBluzelle();
 
+    const startTime = Date.now();
     const dataStr = await api.keyValues();
+    Db.addKeyValuesTime(Date.now() - startTime);
 
     const data = dataStr.map(({ key, value }) => {
       BluzelleHelper._cache.set(this.getItemHash(key), JSON.parse(value));
@@ -63,7 +65,11 @@ export class BluzelleHelper<T> {
 
   async create(key: string, item: T): Promise<string | undefined> {
     const api = await this.getBluzelle();
+
+    const startTime = Date.now();
     await api.create(key, JSON.stringify(item), BluzelleHelper.gasPrice);
+    Db.addCreateTime(Date.now() - startTime);
+
     BluzelleHelper._cache.del(this.getItemHash(key));
     BluzelleHelper._cache.del(this.getLishHash());
     return key;
@@ -79,7 +85,11 @@ export class BluzelleHelper<T> {
 
   async update(key: string, item: T): Promise<void> {
     const api = await this.getBluzelle();
+
+    const startTime = Date.now();
     await api.update(key, JSON.stringify(item), BluzelleHelper.gasPrice);
+    Db.addUpdateTime(Date.now() - startTime);
+
     BluzelleHelper._cache.set(this.getItemHash(key), item);
     BluzelleHelper._cache.del(this.getLishHash());
   }

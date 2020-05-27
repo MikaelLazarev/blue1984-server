@@ -8,6 +8,6 @@ export function numberWithCommas(x: number | undefined) {
 }
 
 export function toHumanDate (d: Date | undefined | number | string) : string{
-    return moment(d).format('YYYY-MM-DD')
+    return moment(d).format('DD.MM.YYYY')
 
 }

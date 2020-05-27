@@ -12,7 +12,7 @@ import AccountCard from './AccountCard';
 import {Account} from '../../core/accounts';
 import {DataScreenComponentProps} from '../../components/DataScreen';
 
-const AccountList: React.FC<DataScreenComponentProps<Account[]>> = ({
+export const AccountList: React.FC<DataScreenComponentProps<Account[]>> = ({
                                                                       data,
                                                                       onSelect,
                                                                     }) => {
@@ -57,5 +57,3 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
 });
-
-export default AccountList;

@@ -41,7 +41,7 @@ export const AccountsStack: React.FC = () => {
           title: 'Accounts',
           headerRight: () => (
             <Button
-              onPress={() => navigation.navigate('ContactEdit', {id: 'new'})}
+              onPress={() => navigation.navigate('AccountNew')}
               icon={{
                 name: 'add',
                 size: 22,

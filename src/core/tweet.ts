@@ -2,6 +2,12 @@ interface URL {
   indices: number[];
   url: string;
 }
+interface User {
+  avatar: string,
+  nickname: string,
+  name: string,
+}
+
 
 export interface Tweet {
   id: string;
@@ -21,9 +27,8 @@ export interface Tweet {
   wasDeleted: boolean;
 }
 
-export interface TweetsFeed {
-  id: string;
-  data: Tweet[];
+export interface TweetsFull extends Tweet{
+  user?: User;
 }
 
 function check<T>(name: string, a: T, b: T): boolean {

@@ -8,7 +8,8 @@ import {
   FormikProps,
 } from 'formik';
 import * as yup from 'yup';
-import {Button, Text} from 'react-native-elements';
+import {Button, Input, Text} from 'react-native-elements';
+import {TextInput, View} from 'react-native';
 
 export interface FieldI {
   label: string;
@@ -56,11 +57,11 @@ export function FormikForm<T, S>({
       case 'input':
       case 'textarea':
         return (
-          <Field
+          <Input
+            label={f?.label}
             placeholder={f.placeholder || f.label}
-            name={name}
-            component={f.type || 'input'}
-            disabled={f.disabled}
+            onChangeText={(e) => setFieldValue(name, e)}
+            key={name}
           />
         );
     }
@@ -71,29 +72,24 @@ export function FormikForm<T, S>({
       const name = e[0];
       const f = e[1] as FieldI;
       console.log(props);
-      return (
-        <>
-          <Text>{f?.label}</Text>
-          {getComponent(name, f, props)}
-          <ErrorMessage name={name} component="div" className="feedback" />
-        </>
-      );
+      return getComponent(name, f, props);
     });
 
   return (
-    <div className="container pd-x-0 pd-lg-x-10 pd-xl-x-0 m-t-20-f pd-t-30-f">
-      <hr />
-      <Formik
-        validationSchema={formSchema}
-        initialValues={initialValues}
-        onSubmit={onSubmit}>
-        {(props: FormikProps<T>) => (
-          <Form className="form" onBlur={onChange}>
-            {fieldsRendered(props)}
-            <Button disabled={isSubmitted}>Submit</Button>
-          </Form>
-        )}
-      </Formik>
-    </div>
+    <Formik
+      validationSchema={formSchema}
+      initialValues={initialValues}
+      onSubmit={onSubmit}>
+      {(props) => (
+        <View>
+          {fieldsRendered(props)}
+          <Button
+            onPress={props.handleSubmit}
+            disabled={isSubmitted}
+            title={'Submit'}
+          />
+        </View>
+      )}
+    </Formik>
   );
 }

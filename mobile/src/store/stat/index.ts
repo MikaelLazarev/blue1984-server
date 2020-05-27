@@ -5,8 +5,6 @@
  * Copyright (c) 2020. Mikhail Lazarev
  *
  */
-
-export const BACKEND_ADDR =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:4000"
-    : "https://blu1984.herokuapp.com/";
+// HYPOTHESES
+export const STAT_PREFIX = 'STAT@@';
+export const endpoint = '/api/stat/';

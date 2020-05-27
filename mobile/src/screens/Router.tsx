@@ -25,12 +25,14 @@ import actions from '../store/actions';
 import {RootState} from '../store';
 import {SplashScreen} from './Welcome/SplashScreen';
 import {TweetsFeedScreen} from './Tweets/TweetsFeedScreen';
+import {StatStack} from "./Stat/StatStack";
 
 const Tab = createBottomTabNavigator();
 
 const tabIcons: Record<string, string> = {
   Feed: 'ios-person',
   Accounts: 'ios-chatbubbles',
+  Stat: 'ios-stats',
 };
 
 export const Router = () => {
@@ -70,6 +72,7 @@ export const Router = () => {
           }}>
           <Tab.Screen name="Feed" component={TweetsFeedScreen} />
           <Tab.Screen name="Accounts" component={AccountsStack} />
+          <Tab.Screen name="Stat" component={StatStack} />
         </Tab.Navigator>
       );
   }
