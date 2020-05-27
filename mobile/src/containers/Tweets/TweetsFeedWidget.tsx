@@ -8,10 +8,6 @@
 
 import React from "react";
 import { Tweet } from "../../core/tweet";
-
-// @ts-ignore
-import { Tweet as TweetComponent } from "react-fake-tweet";
-import "react-fake-tweet/dist/index.css";
 import { TweetWidget } from "./TweetWidget";
 
 interface TweetsFeedWidgetProps {

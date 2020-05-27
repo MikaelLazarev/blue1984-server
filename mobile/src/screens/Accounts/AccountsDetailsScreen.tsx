@@ -8,35 +8,32 @@
 import React, {useEffect, useState} from "react";
 
 import { useDispatch, useSelector } from "react-redux";
-import { RouteComponentProps, useHistory } from "react-router";
 
 import { RootState } from "../../store";
 
-import PageHeader from "../../components/PageHeader/PageHeader";
-import { Breadcrumb } from "../../components/PageHeader/Breadcrumb";
 import { DetailsView } from "../../containers/Accounts/DetailsView";
 
 import actions from "../../store/actions";
 import { STATUS } from "../../utils/status";
-import { Loading } from "../../components/Loading";
+import Loading from "../../components/Loading";
 import { getDetailsItem } from "../../store/dataloader";
-import { DataScreen } from "../../components/DataLoader/DataScreen";
+import { DataScreen } from "../../components/DataScreen";
+import {AccountsStackParamList} from "./AccountsStack";
+import {RouteProp, useRoute} from '@react-navigation/native';
 
-interface MatchParams {
-  id: string;
-  tab?: string;
-}
+type ContactDetailsScreenRouteProp = RouteProp<
+    AccountsStackParamList,
+    'AccountsDetailsScreen'
+    >;
 
-interface AccountDetailsScreenProps extends RouteComponentProps<MatchParams> {}
-
-export const AccountsDetailsScreen: React.FC<AccountDetailsScreenProps> = ({
-  match: {
-    params: { id, tab },
-  },
-}: AccountDetailsScreenProps) => {
+export const AccountsDetailsScreen: React.FC = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
+
+  const route = useRoute<ContactDetailsScreenRouteProp>();
+  const {id} = route.params;
+
   const [hash, setHash] = useState("0");
+
 
   useEffect(() => {
     const newHash = Date.now().toString();
@@ -62,7 +59,6 @@ export const AccountsDetailsScreen: React.FC<AccountDetailsScreenProps> = ({
 
         case STATUS.FAILURE:
           setHash("0");
-          alert("Netwrok error");
       }
     }
   }, [hash, operationStatus]);
@@ -73,20 +69,7 @@ export const AccountsDetailsScreen: React.FC<AccountDetailsScreenProps> = ({
 
   const { data, status } = dataItem;
 
-  const breadcrumbs: Breadcrumb[] = [
-    {
-      url: "/accounts",
-      title: "Accounts",
-    },
-  ];
-
   return (
-    <div className="content content-fixed">
-      <PageHeader
-        title={data.id}
-        breadcrumbs={breadcrumbs}
-      />
       <DataScreen data={data} status={status} component={DetailsView} />
-    </div>
   );
 };

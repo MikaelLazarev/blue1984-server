@@ -24,8 +24,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import actions from '../store/actions';
 import {RootState} from '../store';
 import {SplashScreen} from './Welcome/SplashScreen';
-import {JoinScreen} from './JoinScreen/JoinScreen';
-import {TweetsFeedScreen} from "./Tweets/TweetsFeedScreen";
+import {TweetsFeedScreen} from './Tweets/TweetsFeedScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -43,8 +42,9 @@ export const Router = () => {
   const appStatus = useSelector((state: RootState) => state.profile.status);
 
   switch (appStatus) {
+    default:
     case 'NEW':
-      return <JoinScreen />;
+      return <SplashScreen />;
 
     case 'READY':
       return (
@@ -72,7 +72,5 @@ export const Router = () => {
           <Tab.Screen name="Accounts" component={AccountsStack} />
         </Tab.Navigator>
       );
-
-      return <SplashScreen />;
   }
 };

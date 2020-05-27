@@ -7,9 +7,9 @@
 
 import React, {ReactElement, ReactNode} from 'react';
 import {SafeAreaView, ScrollView, StyleSheet} from 'react-native';
-import {STATUS} from '../../utils/status';
-import LoadingView from '../Loading';
-import FailureView from '../Failure';
+import {STATUS} from '../utils/status';
+import LoadingView from './Loading';
+import FailureView from './Failure';
 
 
 export interface DataScreenComponentProps<T> {

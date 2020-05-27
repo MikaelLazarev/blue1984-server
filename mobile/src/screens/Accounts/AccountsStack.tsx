@@ -15,9 +15,8 @@ import {AccountsNewScreen} from "./AccountsNewScreen";
 
 const Stack = createStackNavigator();
 
-export type ContactStackParamList = {
-  ContactDetailsScreen: {id: string};
-  ContactEditScreen: {id: string};
+export type AccountsStackParamList = {
+  AccountDetailsScreen: {id: string};
 };
 
 export const AccountsStack: React.FC = () => {

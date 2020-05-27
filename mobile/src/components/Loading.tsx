@@ -13,7 +13,7 @@ import {
   StatusBar,
 } from 'react-native';
 
-const loadingView = () => (
+export const Loading : React.FC = () => (
   <>
     <StatusBar barStyle="default" />
     <SafeAreaView style={styles.container}>
@@ -31,4 +31,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default loadingView;
+export default Loading;

@@ -10,8 +10,6 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
-    "react": "16.11.0",
-    "react-native": "0.62.2",
     "@react-native-community/async-storage": "^1.10.0",
     "@react-native-community/masked-view": "^0.1.10",
     "@react-navigation/bottom-tabs": "^5.2.6",
@@ -19,6 +17,9 @@
     "@react-navigation/stack": "^5.2.10",
     "@types/redux-api-middleware": "^3.2.0",
     "@types/uuid": "^7.0.3",
+    "formik": "^2.1.4",
+    "react": "16.11.0",
+    "react-native": "0.62.2",
     "react-native-elements": "^1.2.7",
     "react-native-gesture-handler": "^1.6.1",
     "react-native-safe-area-context": "^0.7.3",
@@ -39,18 +40,18 @@
     "@react-native-community/eslint-config": "^1.0.0",
     "@types/jest": "^24.0.24",
     "@types/react-native": "^0.62.0",
+    "@types/react-redux": "^7.1.7",
     "@types/react-test-renderer": "16.9.2",
+    "@types/yup": "^0.28.0",
     "@typescript-eslint/eslint-plugin": "^2.27.0",
     "@typescript-eslint/parser": "^2.27.0",
     "babel-jest": "^24.9.0",
     "eslint": "^6.5.1",
     "jest": "^24.9.0",
     "metro-react-native-babel-preset": "^0.58.0",
-    "react-test-renderer": "16.11.0",
     "prettier": "^2.0.4",
-    "typescript": "^3.8.3",
-    "@types/react-redux": "^7.1.7",
-    "@types/yup": "^0.28.0"
+    "react-test-renderer": "16.11.0",
+    "typescript": "^3.8.3"
   },
   "jest": {
     "preset": "react-native",

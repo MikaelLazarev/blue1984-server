@@ -7,10 +7,7 @@
  */
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useHistory } from "react-router";
 
-import PageHeader from "../../components/PageHeader/PageHeader";
-import { Breadcrumb } from "../../components/PageHeader/Breadcrumb";
 import { FormView } from "../../containers/Accounts/FormView";
 
 import { STATUS } from "../../utils/status";
@@ -18,10 +15,11 @@ import { RootState } from "../../store";
 import {Account, AccountCreateDTO} from "../../core/accounts";
 
 import actions from "../../store/actions";
+import { useNavigation } from "@react-navigation/native";
 
 export const AccountsNewScreen: React.FC = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigation = useNavigation();
   const [hash, setHash] = useState("0");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -37,23 +35,16 @@ export const AccountsNewScreen: React.FC = () => {
     if (hash !== "0") {
       switch (operationStatus) {
         case STATUS.SUCCESS:
-          history.push(`/accounts/${id}`);
+          navigation.navigate(`/accounts/${id}`);
           break;
 
         case STATUS.FAILURE:
           setHash("0");
           setIsSubmitted(false);
-          alert("Cant submit your operation to server");
+          // alert("Cant submit your operation to server");
       }
     }
   }, [hash, operationStatus]);
-
-  const breadcrumbs: Breadcrumb[] = [
-    {
-      url: "/account",
-      title: "Accounts",
-    },
-  ];
 
   const data: AccountCreateDTO = {
     id: "",
@@ -69,7 +60,6 @@ export const AccountsNewScreen: React.FC = () => {
 
   return (
     <div className="content content-fixed">
-      <PageHeader title={"Add new account"} breadcrumbs={breadcrumbs} />
       <FormView data={data} onSubmit={onSubmit} isSubmitted={isSubmitted} />
     </div>
   );

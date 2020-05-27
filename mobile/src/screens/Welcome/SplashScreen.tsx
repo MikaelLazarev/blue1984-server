@@ -1,21 +1,24 @@
-/*
- *  Buzz Chat - Spam-free decentralized chat
- *
- *  https://github.com/MikaelLazarev/buzzchat
- *  Copyright (c) 2020. Mikhail Lazarev
- */
-
 import React from 'react';
 import {Image, SafeAreaView, StyleSheet, View} from 'react-native';
 import {Button, Text} from 'react-native-elements';
-import {useNavigation} from '@react-navigation/native';
+import {useDispatch} from 'react-redux';
+import actions from '../../store/actions';
 
 export const SplashScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  const onStart = () => {
+    dispatch(
+      actions.profile.updateProfile({
+        status: 'READY',
+      }),
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Image
-        source={require('../../../logo.png')}
+        source={require('./1984_cover.jpg')}
         style={{
           height: 200,
           resizeMode: 'contain',
@@ -23,25 +26,12 @@ export const SplashScreen: React.FC = () => {
           marginTop: -40,
         }}
       />
-      <Text
-        style={{
-          fontSize: 18,
-          fontWeight: 'bold',
-          color: '#687882',
-          marginTop: 5,
-        }}>
-        Spam-free real anonymous messanger
-      </Text>
+      <Text h1>Welcome to BLU 1984!</Text>
+      <Text h2>Twitter without censorship</Text>
+      <Text h2>powered by Bluzelle</Text>
       <View style={styles.button}>
-        <Button
-          title="Create an account"
-          // onPress={() => navigation.navigate('Auth')}
-        />
-        <Button
-          style={styles.button2}
-          title="Enter mnemonic"
-          onPress={() => navigation.navigate('EnterMnemonicScreen')}
-        />
+        <Button onPress={onStart}>Break the wall</Button>
+        <Button>Take a tour</Button>
       </View>
     </SafeAreaView>
   );
