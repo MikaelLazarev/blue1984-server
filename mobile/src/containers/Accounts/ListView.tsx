@@ -27,8 +27,13 @@ export const AccountList: React.FC<DataScreenComponentProps<Account[]>> = ({
             placeholder="Type Here..."
             onChangeText={setSearch}
             value={search}
-            lightTheme={true}
+            // lightTheme={true}
             round={true}
+            inputContainerStyle={{backgroundColor: 'white'}}
+            leftIconContainerStyle={{backgroundColor: 'white'}}
+            rightIconContainerStyle={{backgroundColor: 'white'}}
+            containerStyle={{backgroundColor: 'white', borderWidth: 1, borderRadius: 5}}
+            placeholderTextColor={'#g5g5g5'}
         />
 
         <FlatList

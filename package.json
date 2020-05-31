@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon",
-    "start": "ts-node ./src/index.ts",
+    "start": "forever start -v -c ts-node ./src/index.ts",
     "postinstall": "cd client  && npm install && npm run build"
   },
   "resolutions": {
@@ -25,6 +25,7 @@
     "chalk": "^4.0.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "forever": "^3.0.0",
     "inversify": "^5.0.1",
     "moment": "^2.25.3",
     "morgan": "^1.10.0",

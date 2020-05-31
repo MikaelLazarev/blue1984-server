@@ -3,9 +3,11 @@ import {Image, SafeAreaView, StyleSheet, View} from 'react-native';
 import {Button, Text} from 'react-native-elements';
 import {useDispatch} from 'react-redux';
 import actions from '../../store/actions';
+import { useNavigation } from '@react-navigation/native';
 
 export const SplashScreen: React.FC = () => {
   const dispatch = useDispatch();
+  // const navigation = useNavigation();
 
   const onStart = () => {
     dispatch(
@@ -13,6 +15,8 @@ export const SplashScreen: React.FC = () => {
         status: 'READY',
       }),
     );
+
+    // navigation.navigate('AccountList');
   };
 
   return (
