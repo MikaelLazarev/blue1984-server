@@ -1,4 +1,4 @@
-import "reflect-metadata"
+import "reflect-metadata";
 import { ConfigParams } from "./config/config";
 import express, { Application } from "express";
 import cors from "cors";
@@ -11,10 +11,21 @@ import { AccountsController } from "./controllers/accountsController";
 import { TweetsController } from "./controllers/tweetsController";
 import { BluzelleHelper } from "./repository/bluzelleHelper";
 import * as path from "path";
-import {DbController} from "./controllers/dbController";
+import { DbController } from "./controllers/dbController";
+import * as Sentry from "@sentry/node";
+// or using CommonJS
+// const Sentry = require('@sentry/node');
 
 export function createApp(config: ConfigParams): Promise<Application> {
   return new Promise<Application>(async (resolve) => {
+
+    if (process.env.NODE_ENV !== 'development') {
+      Sentry.init({
+        dsn:
+            config.sentryDSN,
+      });
+    }
+
 
     const app = express();
     app.use(
@@ -36,7 +47,7 @@ export function createApp(config: ConfigParams): Promise<Application> {
     };
 
     const accountsController = container.get<AccountsController>(
-        TYPES.AccountsController
+      TYPES.AccountsController
     );
 
     const tweetsController = container.get<TweetsController>(
@@ -54,9 +65,9 @@ export function createApp(config: ConfigParams): Promise<Application> {
     app.get("/api/accounts/:id/", accountsController.retrieve());
     app.get("/api/stat/", dbController.retrieve());
 
-    app.use(express.static(path.join(__dirname, '../client/build/')))
-    app.get('*', (req,res) =>{
-      res.sendFile(path.join(__dirname+'/client/build/index.html'));
+    app.use(express.static(path.join(__dirname, "../client/build/")));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(__dirname + "/client/build/index.html"));
     });
     // Tweets Controller
     app.get("/api/tweets/:blu_id/:id/", tweetsController.retrieve());

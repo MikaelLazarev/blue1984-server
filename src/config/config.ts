@@ -7,6 +7,7 @@ export interface ConfigParams {
   bluzelle_endpoint: string;
   bluzelle_chain_id: string;
   mainDB: string;
+  sentryDSN: string;
 }
 
 const configSchema = {
@@ -17,6 +18,7 @@ const configSchema = {
     "bluzelle_endpoint",
     "bluzelle_chain_id",
       "mainDB",
+      "sentryDSN"
   ],
 };
 
@@ -36,6 +38,7 @@ export function getConfig(): ConfigParams {
         bluzelle_endpoint: process.env.BLUZELLE_ENDPOINT || "",
         bluzelle_chain_id: process.env.BLUZELLE_CHAIN_ID || "",
         mainDB: process.env.MAIN_DB || "Bluzelle1984",
+        sentryDSN: process.env.SENTRY_DSN || "",
       };
     }
 
