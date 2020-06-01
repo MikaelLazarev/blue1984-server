@@ -23,13 +23,20 @@ Freedom to share your own thought is a key need for all people. Today, some soci
 
 Blue1984 scans all accounts you are interested for. It aoutmatically copies them into decentralised Bluzelle DB. If twitter deletes or changes any tweet, it founds differences and hightlights changed / deleted tweets. There is no regitstry flow for providing additional privacy.
 
-![Screenshot 2020-06-01 at 12 49 11](https://user-images.githubusercontent.com/26343374/83402866-3e4eb900-a410-11ea-9455-8adb760cbf86.png)
+![Screenshot 2020-06-01 at 09 39 52](https://user-images.githubusercontent.com/26343374/83402864-3d1d8c00-a410-11ea-97ce-708ca3d69721.png)
 
 Even if your server would be blocked by authority, you could start another one, thanks for Bluzelle all data is stored in decentralised database, so nothing would be deleted!
 
-![Screenshot 2020-06-01 at 09 39 52](https://user-images.githubusercontent.com/26343374/83402864-3d1d8c00-a410-11ea-97ce-708ca3d69721.png)
+![Screenshot 2020-06-01 at 12 49 11](https://user-images.githubusercontent.com/26343374/83402866-3e4eb900-a410-11ea-9455-8adb760cbf86.png)
 
 ## Web and mobile version
+
+You could connect using web or mobile devices (works both on iOS and Android):
+
+<img src='https://user-images.githubusercontent.com/26343374/83404016-7ce57300-a412-11ea-947b-9be3bbbf07d5.png' width='23%'/>
+![4](https://user-images.githubusercontent.com/26343374/83404017-7eaf3680-a412-11ea-90cb-fd732463cc0d.png)
+![3](https://user-images.githubusercontent.com/26343374/83404018-7eaf3680-a412-11ea-94cb-321941c54c12.png)
+![2](https://user-images.githubusercontent.com/26343374/83404020-7f47cd00-a412-11ea-9422-ec1211715b1d.png)
 
 ## Disclaimer
 
