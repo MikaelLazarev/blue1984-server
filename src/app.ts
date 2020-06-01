@@ -65,10 +65,10 @@ export function createApp(config: ConfigParams): Promise<Application> {
     app.get("/api/accounts/:id/", accountsController.retrieve());
     app.get("/api/stat/", dbController.retrieve());
 
-    app.use(express.static(path.join(__dirname, "../client/build/")));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(__dirname + "/client/build/index.html"));
-    });
+    // app.use(express.static(path.join(__dirname, "../client/build/")));
+    // app.get("*", (req, res) => {
+    //   res.sendFile(path.join(__dirname + "/client/build/index.html"));
+    // });
     // Tweets Controller
     app.get("/api/tweets/:blu_id/:id/", tweetsController.retrieve());
 
