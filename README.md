@@ -5,9 +5,14 @@ Anti-censorship app for twitter.
 
 This application was designed from scratch especially for Bluzelle hackathon.
 
+![1984v2 008](https://user-images.githubusercontent.com/26343374/83402867-3f7fe600-a410-11ea-9b57-af6149521fff.jpeg)
+
 Official site: https://blue1984.herokuapp.com/
 
 Video demo: https://youtu.be/O3uLL3kWXAY
+
+Front-end:
+
 
 
 ## Problem
