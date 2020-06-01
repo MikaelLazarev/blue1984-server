@@ -1,11 +1,11 @@
-# Blu1984
+# Blue1984
 ### Twitter without censorship
 
-Anti-censorship app for twitter.
 
-This application was designed from scratch especially for Bluzelle hackathon.
 
 ![1984v2 008](https://user-images.githubusercontent.com/26343374/83402867-3f7fe600-a410-11ea-9b57-af6149521fff.jpeg)
+
+This anti-censorship app for twitter was designed from scratch especially for Bluzelle hackathon.
 
 Official site: https://blue1984.herokuapp.com/
 
@@ -13,12 +13,21 @@ Video demo: https://youtu.be/O3uLL3kWXAY
 
 Front-end:
 
-
-
 ## Problem
+
+Freedom to share your own thought is a key need for all people. Today, some social nwtworks could block and delete accounts or tweets like censors. This power limits freedom and could be used by goverments / corporations against society.
 
 ## User Story
 
+Blue1984 scans all accounts you are interested for. It aoutmatically copies them into decentralised Bluzelle DB. If twitter deletes or changes any tweet, it founds differences and hightlights changed / deleted tweets. There is no regitstry flow for providing additional privacy.
+
+![Screenshot 2020-06-01 at 12 49 11](https://user-images.githubusercontent.com/26343374/83402866-3e4eb900-a410-11ea-9455-8adb760cbf86.png)
+
+Even if your server would be blocked by authority, you could start another one, thanks for Bluzelle all data is stored in decentralised database, so nothing would be deleted!
+
+![Screenshot 2020-06-01 at 09 39 52](https://user-images.githubusercontent.com/26343374/83402864-3d1d8c00-a410-11ea-97ce-708ca3d69721.png)
+
+## Web and mobile version
 
 ## Disclaimer
 
