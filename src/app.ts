@@ -10,7 +10,6 @@ import errorHandler from "./middleware/errorHandler";
 import { AccountsController } from "./controllers/accountsController";
 import { TweetsController } from "./controllers/tweetsController";
 import { BluzelleHelper } from "./repository/bluzelleHelper";
-import * as path from "path";
 import { DbController } from "./controllers/dbController";
 import * as Sentry from "@sentry/node";
 // or using CommonJS
