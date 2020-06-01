@@ -103,6 +103,7 @@ export class BluzelleHelper<T> {
       }
 
       const account = await this._api.account();
+      console.log("ACCOUNT", account)
 
       if (account.address === "") {
         throw "Wrong mnemonic";
