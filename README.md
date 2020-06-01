@@ -17,6 +17,8 @@ Front-end:
 
 Freedom to share your own thought is a key need for all people. Today, some social nwtworks could block and delete accounts or tweets like censors. This power limits freedom and could be used by goverments / corporations against society.
 
+![Screenshot 2020-06-01 at 00 45 22](https://user-images.githubusercontent.com/26343374/83402860-398a0500-a410-11ea-83d8-ab2566de8fc8.png)
+
 ## User Story
 
 Blue1984 scans all accounts you are interested for. It aoutmatically copies them into decentralised Bluzelle DB. If twitter deletes or changes any tweet, it founds differences and hightlights changed / deleted tweets. There is no regitstry flow for providing additional privacy.
