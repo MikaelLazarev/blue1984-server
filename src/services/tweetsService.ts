@@ -82,7 +82,8 @@ export class TweetsService implements TweetsServiceI {
             try {
               console.log(await this._repository.create(blueID, dto));
             } catch (e) {
-              console.log(`Error, cant inset ${dto}. Error: ${e}`);
+              console.log(`Error, cant create entry. Error: ${e}`);
+              console.log(dto);
             }
             console.log(`Insert one for ${Date.now() - startTime} ms`);
           }
@@ -94,7 +95,8 @@ export class TweetsService implements TweetsServiceI {
               dto.wasDeleted = true;
               console.log(await this._repository.update(blueID, dto));
             } catch (e) {
-              console.log(`Error, cant inset ${dto}. Error: ${e}`);
+              console.log(`Error, cant update entry. Error: ${e}`);
+              console.log(dto);
             }
             console.log(`Insert one for ${Date.now() - startTime} ms`);
           }
@@ -106,7 +108,8 @@ export class TweetsService implements TweetsServiceI {
               dto.wasChanged = true;
               console.log(await this._repository.update(blueID, dto));
             } catch (e) {
-              console.log(`Error, cant inset ${dto}. Error: ${e}`);
+              console.log(`Error, cant update entry. Error: ${e}`);
+              console.log(dto);
             }
             console.log(`Insert one for ${Date.now() - startTime} ms`);
           }
