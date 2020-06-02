@@ -15,32 +15,24 @@ import * as Sentry from "@sentry/node";
 
 export function createApp(config: ConfigParams): Promise<Application> {
   return new Promise<Application>(async (resolve) => {
-
-
-
     const app = express();
+
+    if (process.env.NODE_ENV !== "development") {
+      Sentry.init({
+        dsn: config.sentryDSN,
+      });
+      // The request handler must be the first middleware on the app
+      app.use(Sentry.Handlers.requestHandler());
+      // The error handler must be before any other error middleware
+      app.use(Sentry.Handlers.errorHandler());
+    }
+
     app.use(
       cors({
         credentials: true,
         origin: "*",
       })
     );
-
-    console.log("PROCESS:", process.env.NODE_ENV)
-
-    if (process.env.NODE_ENV !== 'development') {
-      Sentry.init({
-        dsn:
-        config.sentryDSN,
-      });
-      // The request handler must be the first middleware on the app
-      app.use(Sentry.Handlers.requestHandler());
-      // The error handler must be before any other error middleware
-      app.use(Sentry.Handlers.errorHandler());
-      console.log("SENTRY STARTED!!")
-    }
-
-
 
     app.use(morganLogger);
 
