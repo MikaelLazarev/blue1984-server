@@ -52,6 +52,7 @@ export interface AccountFull {
 
 export interface AccountCreateDTO {
   id: string;
+  list?: string[];
 }
 
 export const accountCreateDTOSchema = {
@@ -89,7 +90,7 @@ export interface AccountsRepositoryI {
 }
 
 export interface AccountsServiceI {
-  create(dto: AccountCreateDTO): Promise<Account | undefined>;
+  create(dto: AccountCreateDTO): Promise<Account[] | undefined>;
   list(dto: AccountListDTO): Promise<Account[] | undefined>;
   feed(dto: AccountListDTO) : Promise<Tweet[] | undefined>
   retrieve(id: string): Promise<AccountFull>;

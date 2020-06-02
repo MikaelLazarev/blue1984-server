@@ -29,7 +29,7 @@ export class AccountsController {
 
       if (!this._createDTOValidate(dto)) {
         console.log("Incorrect request", dto);
-        return res.status(400).send("Incorrect request");
+        return res.status(400).json({error: 'Internal error, please try later!'});
       }
 
       console.log(dto);
@@ -41,7 +41,7 @@ export class AccountsController {
         res.status(200).json(result);
       } catch (e) {
         console.log(e);
-        res.status(400).send(e);
+        res.status(404).json({error: e});
       }
     };
   }

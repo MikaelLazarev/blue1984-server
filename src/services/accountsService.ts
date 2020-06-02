@@ -46,7 +46,7 @@ export class AccountsService implements AccountsServiceI {
     this.startUpdate();
   }
 
-  async create(dto: AccountCreateDTO): Promise<Account | undefined> {
+  async create(dto: AccountCreateDTO): Promise<Account[] | undefined> {
     try {
       const profile: TwitterProfileDTO = await this.getUserProfile(dto.id);
       const newAccount: Account = {
@@ -55,10 +55,11 @@ export class AccountsService implements AccountsServiceI {
         ...profile,
       };
 
-      return await this._repository.create(newAccount);
+      await this._repository.create(newAccount);
+      return await this.list({accounts: dto.list || []})
     }
     catch (e) {
-      throw "Can get twitter account"
+      throw `Account ${dto.id} was not found in Twitter database. \nPlease check it!`
   }
   }
 
