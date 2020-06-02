@@ -12,18 +12,10 @@ import { TweetsController } from "./controllers/tweetsController";
 import { BluzelleHelper } from "./repository/bluzelleHelper";
 import { DbController } from "./controllers/dbController";
 import * as Sentry from "@sentry/node";
-// or using CommonJS
-// const Sentry = require('@sentry/node');
 
 export function createApp(config: ConfigParams): Promise<Application> {
   return new Promise<Application>(async (resolve) => {
 
-    if (process.env.NODE_ENV !== 'development') {
-      Sentry.init({
-        dsn:
-            config.sentryDSN,
-      });
-    }
 
 
     const app = express();
@@ -33,6 +25,22 @@ export function createApp(config: ConfigParams): Promise<Application> {
         origin: "*",
       })
     );
+
+    console.log("PROCESS:", process.env.NODE_ENV)
+
+    if (process.env.NODE_ENV !== 'development') {
+      Sentry.init({
+        dsn:
+        config.sentryDSN,
+      });
+      // The request handler must be the first middleware on the app
+      app.use(Sentry.Handlers.requestHandler());
+      // The error handler must be before any other error middleware
+      app.use(Sentry.Handlers.errorHandler());
+      console.log("SENTRY STARTED!!")
+    }
+
+
 
     app.use(morganLogger);
 
