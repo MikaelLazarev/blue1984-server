@@ -7,6 +7,7 @@ import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../types";
 import Ajv, { ValidateFunction } from "ajv";
+import {ErrorHandler} from "../middleware/errorHandler";
 
 @injectable()
 export class AccountsController {
@@ -35,6 +36,7 @@ export class AccountsController {
 
       try {
         const result = await this._service.create(dto);
+        ErrorHandler.captureMessage("New account was added " + dto.id);
         console.log(result);
         res.status(200).json(result);
       } catch (e) {

@@ -15,21 +15,17 @@ export default (
 };
 
 export class ErrorHandler {
+  static captureException(error: Error | undefined) {
+    console.log(error);
+    if (process.env.NODE_ENV !== "development") {
+      Sentry.captureException(error);
+    }
+  }
 
- static captureException(error: Error | undefined) {
-   if (process.env.NODE_ENV === "development") {
-     console.log(error);
-   } else {
-     Sentry.captureException(error)
-   }
- }
-
- static captureMessage(message :string) {
-   if (process.env.NODE_ENV === "development") {
-     console.log(message);
-   } else {
-     Sentry.captureMessage(message)
-   }
- }
-
+  static captureMessage(message: string) {
+    console.log(message);
+    if (process.env.NODE_ENV !== "development") {
+      Sentry.captureMessage(message);
+    }
+  }
 }
