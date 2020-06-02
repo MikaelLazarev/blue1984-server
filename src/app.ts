@@ -20,6 +20,10 @@ export function createApp(config: ConfigParams): Promise<Application> {
     if (process.env.NODE_ENV !== "development") {
       Sentry.init({
         dsn: config.sentryDSN,
+        integrations: [
+          new Sentry.Integrations.OnUncaughtException(),
+          new Sentry.Integrations.OnUnhandledRejection(),
+        ],
       });
       // The request handler must be the first middleware on the app
       app.use(Sentry.Handlers.requestHandler());
