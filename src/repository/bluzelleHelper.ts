@@ -4,6 +4,7 @@ import { GasInfo } from "bluzelle/lib/GasInfo";
 import { BluzelleConfig } from "bluzelle/lib/BluzelleConfig";
 import NodeCache from "node-cache";
 import { Db } from "../core/db";
+import { ErrorHandler } from "../middleware/errorHandler";
 
 export class BluzelleHelper<T> {
   private static _globalConfig: BluzelleConfig;
@@ -30,49 +31,61 @@ export class BluzelleHelper<T> {
   }
 
   async findOne(id: string): Promise<T | undefined> {
-    if (BluzelleHelper._cache.has(this.getItemHash(id))) {
-      console.log("got from cache");
-      return BluzelleHelper._cache.get<T>(this.getItemHash(id));
+    try {
+      if (BluzelleHelper._cache.has(this.getItemHash(id))) {
+        console.log("got from cache");
+        return BluzelleHelper._cache.get<T>(this.getItemHash(id));
+      }
+      const api = await this.getBluzelle();
+      const has = await api.has(id);
+      if (!has) {
+        return undefined;
+      }
+      const dataStr = await api.read(id);
+      return JSON.parse(dataStr);
+    } catch (e) {
+      ErrorHandler.captureException(e);
     }
-    const api = await this.getBluzelle();
-    const has = await api.has(id);
-    if (!has) {
-      return undefined;
-    }
-    const dataStr = await api.read(id);
-    return JSON.parse(dataStr);
   }
 
   async list(): Promise<T[] | undefined> {
-    if (BluzelleHelper._cache.has(this.getLishHash())) {
-      return BluzelleHelper._cache.get<T[]>(this.getLishHash());
+    try {
+      if (BluzelleHelper._cache.has(this.getLishHash())) {
+        return BluzelleHelper._cache.get<T[]>(this.getLishHash());
+      }
+
+      const api = await this.getBluzelle();
+
+      const startTime = Date.now();
+      const dataStr = await api.keyValues();
+      Db.addKeyValuesTime(Date.now() - startTime);
+
+      const data = dataStr.map(({ key, value }) => {
+        BluzelleHelper._cache.set(this.getItemHash(key), JSON.parse(value));
+        return JSON.parse(value);
+      });
+
+      BluzelleHelper._cache.set(this.getLishHash(), data);
+      return data;
+    } catch (e) {
+      ErrorHandler.captureException(e);
     }
-
-    const api = await this.getBluzelle();
-
-    const startTime = Date.now();
-    const dataStr = await api.keyValues();
-    Db.addKeyValuesTime(Date.now() - startTime);
-
-    const data = dataStr.map(({ key, value }) => {
-      BluzelleHelper._cache.set(this.getItemHash(key), JSON.parse(value));
-      return JSON.parse(value);
-    });
-
-    BluzelleHelper._cache.set(this.getLishHash(), data);
-    return data;
   }
 
   async create(key: string, item: T): Promise<string | undefined> {
-    const api = await this.getBluzelle();
+    try {
+      const api = await this.getBluzelle();
 
-    const startTime = Date.now();
-    await api.create(key, JSON.stringify(item), BluzelleHelper.gasPrice);
-    Db.addCreateTime(Date.now() - startTime);
+      const startTime = Date.now();
+      await api.create(key, JSON.stringify(item), BluzelleHelper.gasPrice);
+      Db.addCreateTime(Date.now() - startTime);
 
-    BluzelleHelper._cache.del(this.getItemHash(key));
-    BluzelleHelper._cache.del(this.getLishHash());
-    return key;
+      BluzelleHelper._cache.del(this.getItemHash(key));
+      BluzelleHelper._cache.del(this.getLishHash());
+      return key;
+    } catch (e) {
+      ErrorHandler.captureException(e);
+    }
   }
 
   async insert(item: T): Promise<string | undefined> {
@@ -84,14 +97,18 @@ export class BluzelleHelper<T> {
   }
 
   async update(key: string, item: T): Promise<void> {
-    const api = await this.getBluzelle();
+    try {
+      const api = await this.getBluzelle();
 
-    const startTime = Date.now();
-    await api.update(key, JSON.stringify(item), BluzelleHelper.gasPrice);
-    Db.addUpdateTime(Date.now() - startTime);
+      const startTime = Date.now();
+      await api.update(key, JSON.stringify(item), BluzelleHelper.gasPrice);
+      Db.addUpdateTime(Date.now() - startTime);
 
-    BluzelleHelper._cache.set(this.getItemHash(key), item);
-    BluzelleHelper._cache.del(this.getLishHash());
+      BluzelleHelper._cache.set(this.getItemHash(key), item);
+      BluzelleHelper._cache.del(this.getLishHash());
+    } catch (e) {
+      ErrorHandler.captureException(e);
+    }
   }
 
   private async getBluzelle(): Promise<API> {
@@ -103,7 +120,7 @@ export class BluzelleHelper<T> {
       }
 
       const account = await this._api.account();
-      console.log("ACCOUNT", account)
+      console.log("ACCOUNT", account);
 
       if (account.address === "") {
         throw "Wrong mnemonic";
