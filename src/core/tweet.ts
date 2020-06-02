@@ -27,6 +27,7 @@ export interface Tweet {
   wasDeleted: boolean;
 }
 
+
 export interface TweetsFull extends Tweet{
   user?: User;
 }
@@ -67,5 +68,5 @@ export interface TweetsRepositoryI {
 
 export interface TweetsServiceI {
   retrieve(bluID: string, id: string): Promise<Tweet | undefined>;
-  update(twitterID: string, blueID: string): Promise<number>;
+  update(twitterID: string, blueID: string, tweets: Tweet[]): Promise<number>;
 }

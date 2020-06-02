@@ -8,6 +8,8 @@ export interface ConfigParams {
   bluzelle_chain_id: string;
   mainDB: string;
   sentryDSN: string;
+  scrapper: string;
+  scrapper_token: string;
 }
 
 const configSchema = {
@@ -17,8 +19,10 @@ const configSchema = {
     "bluzelle_mnemonic",
     "bluzelle_endpoint",
     "bluzelle_chain_id",
-      "mainDB",
-      "sentryDSN"
+    "mainDB",
+    "sentryDSN",
+    "scrapper",
+    "scrapper_token",
   ],
 };
 
@@ -39,6 +43,8 @@ export function getConfig(): ConfigParams {
         bluzelle_chain_id: process.env.BLUZELLE_CHAIN_ID || "",
         mainDB: process.env.MAIN_DB || "Bluzelle1984",
         sentryDSN: process.env.SENTRY_DSN || "",
+        scrapper: process.env.SCRAPPER || "https://blue1984-ts.herokuapp.com/",
+        scrapper_token: process.env.SCRAPPER_TOKEN || "",
       };
     }
 

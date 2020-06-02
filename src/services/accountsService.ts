@@ -18,8 +18,9 @@ import {
 } from "../core/tweet";
 
 // @ts-ignore
-import { getUserProfile } from "scrape-twitter";
 import { v4 as uuidv4 } from "uuid";
+import axios, { AxiosInstance } from "axios";
+import config from "../config/config";
 
 @injectable()
 export class AccountsService implements AccountsServiceI {
@@ -27,6 +28,7 @@ export class AccountsService implements AccountsServiceI {
   private _tweetsRepository: TweetsRepositoryI;
   private _tweetsService: TweetsServiceI;
   private _updater: NodeJS.Timeout;
+  private _axiosInstance: AxiosInstance;
 
   public constructor(
     @inject(TYPES.AccountsRepository) repository: AccountsRepositoryI,
@@ -36,24 +38,54 @@ export class AccountsService implements AccountsServiceI {
     this._repository = repository;
     this._tweetsService = tweetsService;
     this._tweetsRepository = tweetsRepository;
+    this._axiosInstance = axios.create({
+      baseURL: config.scrapper,
+      timeout: 100000,
+      headers: { Authorization: "Basic " + config.scrapper_token },
+    });
     this.startUpdate();
   }
 
   async create(dto: AccountCreateDTO): Promise<Account | undefined> {
-    const profile: TwitterProfileDTO = await getUserProfile(dto.id);
-    const newAccount: Account = {
-      id: dto.id,
-      bluID: uuidv4(),
-      ...profile,
-    };
+    try {
+      const profile: TwitterProfileDTO = await this.getUserProfile(dto.id);
+      const newAccount: Account = {
+        id: dto.id,
+        bluID: uuidv4(),
+        ...profile,
+      };
 
-    return await this._repository.create(newAccount);
+      return await this._repository.create(newAccount);
+    }
+    catch (e) {
+      throw "Can get twitter account"
   }
+  }
+
+  async getUserProfile(account: string): Promise<TwitterProfileDTO> {
+    const response = await this._axiosInstance.get<TwitterProfileDTO>(
+      "/profile/" + account
+    );
+    if (response === undefined) throw "Cant get account";
+    if (response.status === 404) throw "Account not found";
+    console.log("GOT", response);
+    return response.data;
+  }
+
+  async getUserTimeline(account: string): Promise<Tweet[]> {
+    const response = await this._axiosInstance.get<Tweet[]>(
+        "/timeline/" + account
+    );
+    if (response === undefined) throw "Cant get timeline for " + account;
+    console.log(response);
+    return response.data;
+  }
+
 
   async list(dto: AccountListDTO): Promise<Account[] | undefined> {
     const data = await this._repository.list();
 
-    console.log(data);
+    console.log("ALL ACCOUNTS", data);
     const accountsMap = new Map<string, boolean>();
     dto.accounts.forEach((e) => accountsMap.set(e, true));
     console.log(accountsMap);
@@ -111,8 +143,10 @@ export class AccountsService implements AccountsServiceI {
       return;
     }
 
+
     for (let acc of accounts) {
-      const updated = await this._tweetsService.update(acc.id, acc.bluID);
+      const originalTweets = await this.getUserTimeline(acc.id);
+      const updated = await this._tweetsService.update(acc.id, acc.bluID, originalTweets);
 
       const tweets = (await this._tweetsRepository.list(acc.bluID)) || [];
       const changed = tweets.filter((e) => e.wasChanged).length;
@@ -124,7 +158,7 @@ export class AccountsService implements AccountsServiceI {
       console.log("SIZE:::", tweets.length);
 
       // Got last data from profile
-      const profile: TwitterProfileDTO = await getUserProfile(acc.id);
+      const profile: TwitterProfileDTO = await this.getUserProfile(acc.id);
       const newAccount: Account = {
         ...acc,
         ...profile,
