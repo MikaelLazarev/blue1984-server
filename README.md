@@ -11,6 +11,8 @@ Video demo: https://youtu.be/O3uLL3kWXAY
 
 Front-end: https://github.com/MikaelLazarev/blue1984
 
+Python microservice for twitter scrapping: https://github.com/MikaelLazarev/blue1984-ts
+
 ## Problem
 
 Freedom to share your own thought is a key need for all people. Today, some social nwtworks could block and delete accounts or tweets like censors. This power limits freedom and could be used by goverments / corporations against society.
