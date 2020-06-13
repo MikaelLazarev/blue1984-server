@@ -5,49 +5,74 @@
  * Copyright (c) 2020. Mikhail Lazarev
  *
  */
-import React, { useEffect, useState } from "react";
-import { Text } from 'react-native-elements'
-import { useDispatch, useSelector } from "react-redux";
+import React, {useEffect, useState} from 'react';
+import {Text} from 'react-native-elements';
+import {useDispatch, useSelector} from 'react-redux';
 
-import { FormView } from "../../containers/Accounts/FormView";
+import {FormView} from '../../containers/Accounts/FormView';
 
-import { STATUS } from "../../utils/status";
-import { RootState } from "../../store";
-import {Account, AccountCreateDTO} from "../../core/accounts";
+import {STATUS} from '../../utils/status';
+import {RootState} from '../../store';
+import {Account, AccountCreateDTO} from '../../core/accounts';
 
-import actions from "../../store/actions";
-import { useNavigation } from "@react-navigation/native";
-import {Alert, SafeAreaView, StyleSheet} from "react-native";
+import actions from '../../store/actions';
+import {useNavigation} from '@react-navigation/native';
+import {Alert, SafeAreaView, StyleSheet} from 'react-native';
 
 export const AccountsNewScreen: React.FC = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const [hash, setHash] = useState("0");
+  const [hash, setHash] = useState('0');
+  const [waitForList, setWaitForList] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const operationStatus = useSelector(
-    (state: RootState) => state.operations.data[hash]?.data
+      (state: RootState) => state.operations.data[hash]?.data,
   );
 
   // TODO: Move status to new Dataloader component
 
   useEffect(() => {
-    if (hash !== "0") {
+    if (hash !== '0' && !waitForList) {
       switch (operationStatus?.status) {
         case STATUS.SUCCESS:
-          navigation.navigate('AccountsList' );
+          const newHash = Date.now().toString();
+          setHash(newHash);
+
+          dispatch(actions.accounts.getList(newHash));
+          setWaitForList(true);
+
           break;
 
         case STATUS.FAILURE:
-          setHash("0");
+          setHash('0');
           setIsSubmitted(false);
           Alert.alert(
-              "Cant add account",
-              operationStatus.error || "Network error",
-              [
-                { text: "OK", onPress: () => console.log("OK Pressed") }
-              ],
-              { cancelable: false }
+              'Cant add account',
+              operationStatus.error || 'Network error',
+              [{text: 'OK', onPress: () => console.log('OK Pressed')}],
+              {cancelable: false},
+          );
+          // alert("Cant submit your operation to server");
+      }
+    }
+
+    if (hash !== '0' && waitForList) {
+      switch (operationStatus?.status) {
+        case STATUS.SUCCESS:
+          setHash('0');
+          navigation.navigate('AccountsList');
+
+          break;
+
+        case STATUS.FAILURE:
+          setHash('0');
+          setIsSubmitted(false);
+          Alert.alert(
+              'Cant add account',
+              operationStatus.error || 'Network error',
+              [{text: 'OK', onPress: () => console.log('OK Pressed')}],
+              {cancelable: false},
           );
           // alert("Cant submit your operation to server");
       }
@@ -55,10 +80,9 @@ export const AccountsNewScreen: React.FC = () => {
   }, [hash, operationStatus]);
 
   const data: AccountCreateDTO = {
-    id: "",
+    id: '',
   };
   const onSubmit = (values: AccountCreateDTO) => {
-
     setIsSubmitted(true);
     const newHash = Date.now().toString();
     setHash(newHash);
@@ -79,7 +103,7 @@ export const AccountsNewScreen: React.FC = () => {
             }}>
           Enter valid Twitter account
         </Text>
-      <FormView data={data} onSubmit={onSubmit} isSubmitted={isSubmitted} />
+        <FormView data={data} onSubmit={onSubmit} isSubmitted={isSubmitted} />
       </SafeAreaView>
   );
 };
