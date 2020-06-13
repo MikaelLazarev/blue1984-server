@@ -25,7 +25,7 @@ export const AccountsStack: React.FC = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="AccountList"
+        name="AccountsList"
         component={AccountsListScreen}
         options={{
           headerLeft: () => (
