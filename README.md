@@ -43,7 +43,7 @@ Python microservice for twitter scrapping: https://github.com/MikaelLazarev/blue
 
 ## How to install server:
 
-1. Clone this repository
+1. Clone this repository: ```git clone git@github.com:MikaelLazarev/blu1984.git```
 
 2. Set up & deploy python microservice as its written https://github.com/MikaelLazarev/blue1984-ts#how-to-install
 
