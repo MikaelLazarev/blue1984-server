@@ -74,7 +74,6 @@ Python microservice for twitter scrapping: https://github.com/MikaelLazarev/blue
 ```
 export const BACKEND_ADDR = 'http://192.168.0.47:4000';
 
-export const SSO_ADDR = 'http://192.168.0.47:4000';
 ```
 4. Go to ./mobile/ios and install ios modules with ```pod install```
 5. Run iOS app with ```yarn ios``` or ```npm start ios```
