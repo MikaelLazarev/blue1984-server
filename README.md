@@ -64,7 +64,7 @@ Python microservice for twitter scrapping: https://github.com/MikaelLazarev/blue
   "scrapper_token" : "<Python microservice basic auth token>"
 }
 ```
-6. Run server for local development with ```yarn start``` or ```npm run start```
+6. Run server for local development with ```yarn dev``` or ```npm run dev```
 
 #### Starting mobile apps
 
