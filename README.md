@@ -49,8 +49,9 @@ Python microservice for twitter scrapping: https://github.com/MikaelLazarev/blue
 
 3. Install all dependecies: ```yarn or npm i```
 
-4. Create a configuration file (do not use json file in production!) ```touch ./src/config/config.json```
-Open config file and fill with properties:
+4. Create a configuration file (do not use json file in production!) ```mv ./src/config/config.sample.json ./src/config/config.json```
+
+5. Open config file and fill with properties:
 ```
 {
   "port": <Server port, default: 4000>,
@@ -63,7 +64,7 @@ Open config file and fill with properties:
   "scrapper_token" : "<Python microservice basic auth token>"
 }
 ```
-5. Run server for local development with ```yarn start``` or ```npm run start```
+6. Run server for local development with ```yarn start``` or ```npm run start```
 
 #### Starting mobile apps
 
