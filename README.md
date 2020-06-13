@@ -43,14 +43,15 @@ Python microservice for twitter scrapping: https://github.com/MikaelLazarev/blue
 
 ## How to install server:
 
-1. Clone this repository
+1. Clone this repository: ```git clone git@github.com:MikaelLazarev/blu1984.git```
 
 2. Set up & deploy python microservice as its written https://github.com/MikaelLazarev/blue1984-ts#how-to-install
 
 3. Install all dependecies: ```yarn or npm i```
 
-4. Create a configuration file (do not use json file in production!) ```touch ./src/config/config.json```
-Open config file and fill with properties:
+4. Create a configuration file (do not use json file in production!) ```mv ./src/config/config.sample.json ./src/config/config.json```
+
+5. Open config file and fill with properties:
 ```
 {
   "port": <Server port, default: 4000>,
@@ -63,7 +64,7 @@ Open config file and fill with properties:
   "scrapper_token" : "<Python microservice basic auth token>"
 }
 ```
-5. Run server for local development with ```yarn start``` or ```npm run start```
+6. Run server for local development with ```yarn start``` or ```npm run start```
 
 #### Starting mobile apps
 
@@ -73,7 +74,6 @@ Open config file and fill with properties:
 ```
 export const BACKEND_ADDR = 'http://192.168.0.47:4000';
 
-export const SSO_ADDR = 'http://192.168.0.47:4000';
 ```
 4. Go to ./mobile/ios and install ios modules with ```pod install```
 5. Run iOS app with ```yarn ios``` or ```npm start ios```
