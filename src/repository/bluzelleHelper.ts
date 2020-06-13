@@ -1,3 +1,8 @@
+/*
+ * Buzzzchat - P2P Chat based on Bluzelle DB
+ * Copyright (c) 2020. Mikhail Lazarev
+ */
+
 import { bluzelle, API } from "bluzelle";
 import { v4 as uuidv4 } from "uuid";
 import { GasInfo } from "bluzelle/lib/GasInfo";
@@ -6,9 +11,14 @@ import NodeCache from "node-cache";
 import { Db } from "../core/db";
 import { ErrorHandler } from "../middleware/errorHandler";
 
+const REPEAT_QTY = 2;
+
 export class BluzelleHelper<T> {
   private static _globalConfig: BluzelleConfig;
   private static _cache = new NodeCache({ deleteOnExpire: true, stdTTL: 100 });
+  private static _account: string;
+  private static _amount: string;
+
   private _config: BluzelleConfig;
   private _uuid: string;
   private _api: API;
@@ -17,7 +27,7 @@ export class BluzelleHelper<T> {
   };
 
   constructor(uuid: string) {
-    this._config = BluzelleHelper._globalConfig;
+    this._config = Object.create(BluzelleHelper._globalConfig);
     this._config.uuid = uuid;
     this._uuid = uuid;
   }
@@ -30,7 +40,15 @@ export class BluzelleHelper<T> {
     return this._uuid;
   }
 
-  async findOne(id: string): Promise<T | undefined> {
+  static get account(): string {
+    return this._account;
+  }
+
+  static get amount(): string {
+    return this._amount;
+  }
+
+  async findOne(id: string, repeat?: number): Promise<T | undefined> {
     try {
       if (BluzelleHelper._cache.has(this.getItemHash(id))) {
         console.log("got from cache");
@@ -44,15 +62,27 @@ export class BluzelleHelper<T> {
       const dataStr = await api.read(id);
       return JSON.parse(dataStr);
     } catch (e) {
-      ErrorHandler.captureException(e);
+      const repeatQty = repeat === undefined ? REPEAT_QTY : repeat - 1;
+      if (repeatQty <= 0) {
+        ErrorHandler.captureException(e);
+        return;
+      }
+      console.log(
+        `[Bluzelle FindOne]: Error, DB: ${this._uuid}\n${e} Try attempt: ${
+          REPEAT_QTY - repeatQty
+        }`
+      );
+      return await this.findOne(id, repeatQty);
     }
   }
 
-  async list(): Promise<T[] | undefined> {
+  async list(repeat?: number): Promise<T[] | undefined> {
     try {
-      if (BluzelleHelper._cache.has(this.getLishHash())) {
-        return BluzelleHelper._cache.get<T[]>(this.getLishHash());
-      }
+      // if (BluzelleHelper._cache.has(this.getLishHash())) {
+      //   return BluzelleHelper._cache.get<T[]>(this.getLishHash());
+      // }
+
+      console.log(this._config);
 
       const api = await this.getBluzelle();
 
@@ -68,11 +98,25 @@ export class BluzelleHelper<T> {
       BluzelleHelper._cache.set(this.getLishHash(), data);
       return data;
     } catch (e) {
-      ErrorHandler.captureException(e);
+      const repeatQty = repeat === undefined ? REPEAT_QTY : repeat - 1;
+      if (repeatQty <= 0) {
+        ErrorHandler.captureException(e);
+        return;
+      }
+      console.log(
+        `[Bluzelle List]: Error, DB: ${this._uuid}\n${e} Try attempt: ${
+          REPEAT_QTY - repeatQty
+        }`
+      );
+      return await this.list(repeatQty);
     }
   }
 
-  async create(key: string, item: T): Promise<string | undefined> {
+  async create(
+    key: string,
+    item: T,
+    repeat?: number
+  ): Promise<string | undefined> {
     try {
       const api = await this.getBluzelle();
 
@@ -84,7 +128,17 @@ export class BluzelleHelper<T> {
       BluzelleHelper._cache.del(this.getLishHash());
       return key;
     } catch (e) {
-      ErrorHandler.captureException(e);
+      const repeatQty = repeat === undefined ? REPEAT_QTY : repeat - 1;
+      if (repeatQty <= 0) {
+        ErrorHandler.captureException(e);
+        return;
+      }
+      console.log(
+        `[Bluzelle Create]:Error, DB: ${this._uuid}\n${e} Try attempt: ${
+          REPEAT_QTY - repeatQty
+        }`
+      );
+      return await this.create(key, item, repeatQty);
     }
   }
 
@@ -96,7 +150,7 @@ export class BluzelleHelper<T> {
     return key;
   }
 
-  async update(key: string, item: T): Promise<void> {
+  async update(key: string, item: T, repeat?: number): Promise<void> {
     try {
       const api = await this.getBluzelle();
 
@@ -107,11 +161,21 @@ export class BluzelleHelper<T> {
       BluzelleHelper._cache.set(this.getItemHash(key), item);
       BluzelleHelper._cache.del(this.getLishHash());
     } catch (e) {
-      ErrorHandler.captureException(e);
+      const repeatQty = repeat === undefined ? REPEAT_QTY : repeat - 1;
+      if (repeatQty <= 0) {
+        ErrorHandler.captureException(new Error(`Bluzelle:Update ${e}`));
+        return;
+      }
+      console.log(
+        `[Bluzelle Update]: Error, DB: ${this._uuid}\n${e} Try attempt: ${
+          REPEAT_QTY - repeatQty
+        }`
+      );
+      return await this.update(key, item, repeatQty);
     }
   }
 
-  private async getBluzelle(): Promise<API> {
+  async getBluzelle(): Promise<API> {
     if (this._api === undefined) {
       this._api = await bluzelle(this._config);
 
@@ -125,16 +189,45 @@ export class BluzelleHelper<T> {
       if (account.address === "") {
         throw "Wrong mnemonic";
       }
+
+      BluzelleHelper._account = account.address;
+      BluzelleHelper._amount =
+        account.coins.length > 0 ? account.coins[0].amount : "ZERO";
     }
 
     return this._api;
   }
 
+  async delete(key: string, repeat?: number): Promise<void> {
+    try {
+      const api = await this.getBluzelle();
+      const has = await api.has(key);
+      if (!has) {
+        return undefined;
+      }
+      await api.delete(key, BluzelleHelper.gasPrice);
+      BluzelleHelper._cache.del(this.getItemHash(key));
+      BluzelleHelper._cache.del(this.getLishHash());
+    } catch (e) {
+      const repeatQty = repeat === undefined ? REPEAT_QTY : repeat - 1;
+      if (repeatQty <= 0) {
+        ErrorHandler.captureException(e);
+        return;
+      }
+      console.log(
+        `[Bluzelle Delete]: Error, DB: ${this._uuid}\n${e} Try attempt: ${
+          REPEAT_QTY - repeatQty
+        }`
+      );
+      return await this.delete(key, repeatQty);
+    }
+  }
+
   private getLishHash(): string {
-    return this.uuid + "!LIST";
+    return this._uuid + "!LIST";
   }
 
   private getItemHash(key: string): string {
-    return this.uuid + "@" + key;
+    return this._uuid + "@" + key;
   }
 }
