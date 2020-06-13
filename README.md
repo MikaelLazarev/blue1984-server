@@ -51,6 +51,7 @@ Python microservice for twitter scrapping: https://github.com/MikaelLazarev/blue
 
 4. Create a configuration file (do not use json file in production!) ```touch ./src/config/config.json```
 Open config file and fill with properties:
+```
 {
   "port": <Server port, default: 4000>,
   "bluzelle_mnemonic": <Mnemonic for Bluzelle account>,
@@ -61,7 +62,7 @@ Open config file and fill with properties:
   "scrapper": "<Python microservice address>",
   "scrapper_token" : "<Python microservice basic auth token>"
 }
-
+```
 5. Run server for local development with ```yarn start``` or ```npm run start```
 
 #### Starting mobile apps
