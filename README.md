@@ -9,8 +9,6 @@ Official site: https://blue1984.herokuapp.com/
 
 Video demo: https://youtu.be/O3uLL3kWXAY
 
-Front-end: https://github.com/MikaelLazarev/blue1984
-
 ## Problem
 
 Freedom to share your own thought is a key need for all people. Today, some social nwtworks could block and delete accounts or tweets like censors. This power limits freedom and could be used by goverments / corporations against society.
@@ -27,11 +25,64 @@ Even if your server would be blocked by authority, you could start another one, 
 
 ![Screenshot 2020-06-01 at 12 49 11](https://user-images.githubusercontent.com/26343374/83402866-3e4eb900-a410-11ea-9455-8adb760cbf86.png)
 
-## Web and mobile version
+## Mobile & web version
 
 You could connect using web or mobile devices (works both on iOS and Android):
 
 <img src='https://user-images.githubusercontent.com/26343374/83404016-7ce57300-a412-11ea-947b-9be3bbbf07d5.png' width='21%'/>&nbsp;&nbsp;&nbsp;<img src='https://user-images.githubusercontent.com/26343374/83404020-7f47cd00-a412-11ea-9422-ec1211715b1d.png' width='21%'/>&nbsp;&nbsp;&nbsp;<img src='https://user-images.githubusercontent.com/26343374/83404018-7eaf3680-a412-11ea-94cb-321941c54c12.png' width='21%'/>&nbsp;&nbsp;&nbsp;<img src='https://user-images.githubusercontent.com/26343374/83404017-7eaf3680-a412-11ea-90cb-fd732463cc0d.png' width='21%'/>
+
+## Project & repostories
+
+Server: https://github.com/MikaelLazarev/blu1984 (main folder)
+
+Mobile apps: https://github.com/MikaelLazarev/blu1984 ('/mobile' folder)
+
+Front-end: https://github.com/MikaelLazarev/blue1984
+
+Python microservice for twitter scrapping: https://github.com/MikaelLazarev/blue1984-ts
+
+## How to install server:
+
+1. Clone this repository
+
+2. Set up & deploy python microservice as its written https://github.com/MikaelLazarev/blue1984-ts#how-to-install
+
+3. Install all dependecies: ```yarn or npm i```
+
+4. Create a configuration file (do not use json file in production!) ```touch ./src/config/config.json```
+Open config file and fill with properties:
+```
+{
+  "port": <Server port, default: 4000>,
+  "bluzelle_mnemonic": <Mnemonic for Bluzelle account>,
+  "bluzelle_endpoint": <Bluzelle server entry point>,
+  "bluzelle_chain_id": <Bluzelle chain_id>,
+  "mainDB": "<Main Bluzelle DB UUID>",
+  "sentryDSN": "<Sentry DSN code>",
+  "scrapper": "<Python microservice address>",
+  "scrapper_token" : "<Python microservice basic auth token>"
+}
+```
+5. Run server for local development with ```yarn start``` or ```npm run start```
+
+#### Starting mobile apps
+
+1. Go to /mobile folder
+2. Install  with ```yarn``` or ```npm i```
+3. Open ./config.ts and provide server address. For local start, please provide you local network address instead localhost:
+```
+export const BACKEND_ADDR = 'http://192.168.0.47:4000';
+
+export const SSO_ADDR = 'http://192.168.0.47:4000';
+```
+4. Go to ./mobile/ios and install ios modules with ```pod install```
+5. Run iOS app with ```yarn ios``` or ```npm start ios```
+6. Run Android app with ```yarn android``` or ```npm run android```
+
+
+#### Starting web version
+
+Please, check https://github.com/MikaelLazarev/blue1984 for manual.
 
 ## Disclaimer
 
