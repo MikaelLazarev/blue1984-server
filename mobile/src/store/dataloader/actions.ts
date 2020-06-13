@@ -12,7 +12,7 @@ import * as actionTypes from "./index";
 import { ThunkAction } from "redux-thunk";
 import { RootState } from "../index";
 import { Action } from "redux";
-import { updateStatus } from "../operations/actions";
+import {updateOperationStatusByAction, updateStatus} from "../operations/actions";
 import { STATUS } from "../../utils/status";
 
 export const createDataLoaderListActions = (
@@ -74,13 +74,7 @@ export const createDataLoaderDetailActions = (
       })
     );
 
-    if (action === undefined || action.error) {
-      dispatch(
-        updateStatus(hash || "0", STATUS.FAILURE, action.payload.message)
-      );
-    } else {
-      dispatch(updateStatus(hash || "0", STATUS.SUCCESS));
-    }
+  dispatch(updateOperationStatusByAction(action, hash || "0"))
     return action;
 
 };
@@ -135,12 +129,7 @@ export const createDataLoaderCreateUpdateDataAction = <T>(
 
   console.log("HASHHH", hash);
 
-  if (action.error) {
-    dispatch(updateStatus(hash || "0", STATUS.FAILURE, action.payload.message));
-  } else {
-    dispatch(updateStatus(hash || "0", STATUS.SUCCESS));
-  }
-
+  dispatch(updateOperationStatusByAction(action, hash || "0"))
   return action;
 };
 

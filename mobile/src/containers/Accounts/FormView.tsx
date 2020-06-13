@@ -31,7 +31,6 @@ export const FormView: React.FC<FormViewProfileProps> = ({
 
   const fields = {
     id: {
-      label: "Account name",
     },
   };
 

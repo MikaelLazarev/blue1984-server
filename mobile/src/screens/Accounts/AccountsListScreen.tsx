@@ -12,6 +12,8 @@ import {RootState} from '../../store';
 import actions from '../../store/actions';
 import {DataScreen} from '../../components/DataScreen';
 import {useNavigation} from '@react-navigation/native';
+import {SafeAreaView, SafeAreaViewComponent} from "react-native";
+import { Text } from 'react-native-elements'
 
 export const AccountsListScreen: React.FC = () => {
   const dispatch = useDispatch();
@@ -29,6 +31,13 @@ export const AccountsListScreen: React.FC = () => {
   console.log("HELLOO!", data, status)
 
   const onSelect = (id: string) => navigation.navigate('AccountDetails', {id});
+
+  if (data.length === 0) {
+    return <SafeAreaView>
+      <Text>You have not added any account.</Text>
+
+    </SafeAreaView>
+  }
 
   return (
       <DataScreen

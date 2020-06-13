@@ -18,7 +18,7 @@ import { RootState } from "../index";
 import { Action } from "redux";
 import { Account } from "../../core/accounts";
 import { LIST_FAILURE, LIST_REQUEST, LIST_SUCCESS } from "../dataloader";
-import { updateStatus } from "../operations/actions";
+import {updateOperationStatusByAction, updateStatus} from "../operations/actions";
 import { STATUS } from "../../utils/status";
 import {getApiById, getFullAPIAddress} from "../../utils/api";
 import { createAction } from "redux-api-middleware";
@@ -38,10 +38,7 @@ export const addNewAccount = (
   dispatch
 ) => {
 
-console.log("IDDDDDQ", id);
   const action = await dispatch(addAccountAction("new", { id }, hash));
-  console.log(action);
-
   const savedAccounts = await getAccountsFromStorage();
   let accountsList = new Set([id,
     ...savedAccounts
@@ -77,11 +74,7 @@ export const getList = (
     })
   );
 
-  if (action.error) {
-    dispatch(updateStatus(hash || "0", STATUS.FAILURE, action.payload.message));
-  } else {
-    dispatch(updateStatus(hash || "0", STATUS.SUCCESS));
-  }
+  dispatch(updateOperationStatusByAction(action, hash));
 
   return action;
 };

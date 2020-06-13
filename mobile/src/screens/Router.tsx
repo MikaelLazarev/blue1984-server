@@ -26,6 +26,7 @@ import {RootState} from '../store';
 import {SplashScreen} from './Welcome/SplashScreen';
 import {TweetsFeedScreen} from './Tweets/TweetsFeedScreen';
 import {StatStack} from "./Stat/StatStack";
+import {WelcomeStack} from "./Welcome/WelcomeStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -39,14 +40,14 @@ export const Router = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(actions.profile.getProfile());
-  }, []);
+  });
 
   const appStatus = useSelector((state: RootState) => state.profile.status);
 
   switch (appStatus) {
     default:
     case 'NEW':
-      return <SplashScreen />;
+      return <WelcomeStack/>;
 
     case 'READY':
       return (

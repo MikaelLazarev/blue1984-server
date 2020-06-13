@@ -14,6 +14,12 @@ import {LineChart} from 'react-native-chart-kit';
 import {RootState} from '../../store';
 import {GraphItem} from '../../containers/Stat/GraphItem';
 import Loading from '../../components/Loading';
+import { useNavigation } from '@react-navigation/native';
+
+interface Parameters {
+  name: string,
+  index: string
+}
 
 export const StatScreen: React.FC = () => {
   const dispatch = useDispatch();
@@ -28,12 +34,12 @@ export const StatScreen: React.FC = () => {
   const onStart = () => {
     dispatch(
       actions.profile.updateProfile({
-        status: 'READY',
+        status: 'NEW',
       }),
     );
   };
 
-  const parameters = [
+  const parameters: Parameters[] = [
     {name: 'KeyValue get operation (Last 20)', index: 'keyValue'},
     {name: 'Create operation (Last 20)', index: 'create'},
     {name: 'Update operation (Last 20)', index: 'update'},

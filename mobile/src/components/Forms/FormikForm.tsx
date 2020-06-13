@@ -57,12 +57,15 @@ export function FormikForm<T, S>({
       case 'input':
       case 'textarea':
         return (
-          <Input
-            label={f?.label}
-            placeholder={f.placeholder || f.label}
-            onChangeText={(e) => setFieldValue(name, e)}
-            key={name}
-          />
+          <View style={{width: '80%'}}>
+            <Input
+              label={f?.label}
+              placeholder={f.placeholder || f.label}
+              onChangeText={(e) => setFieldValue(name, e)}
+              key={name}
+              value={values[name] || ''}
+            />
+          </View>
         );
     }
   }
@@ -81,14 +84,16 @@ export function FormikForm<T, S>({
       initialValues={initialValues}
       onSubmit={onSubmit}>
       {(props) => (
-        <View>
+        <>
           {fieldsRendered(props)}
-          <Button
-            onPress={props.handleSubmit}
-            disabled={isSubmitted}
-            title={'Submit'}
-          />
-        </View>
+          <View style={{width: '80%', marginTop: 20}}>
+            <Button
+              onPress={props.handleSubmit}
+              disabled={isSubmitted}
+              title={'Submit'}
+            />
+          </View>
+        </>
       )}
     </Formik>
   );

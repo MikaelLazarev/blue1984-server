@@ -7,16 +7,16 @@ import { useNavigation } from '@react-navigation/native';
 
 export const SplashScreen: React.FC = () => {
   const dispatch = useDispatch();
-  // const navigation = useNavigation();
+  const navigation = useNavigation();
 
-  const onStart = () => {
+  const onStart = async () => {
     dispatch(
       actions.profile.updateProfile({
         status: 'READY',
       }),
     );
 
-    // navigation.navigate('AccountList');
+    // navigation.navigate('Accounts', { screen: 'AccountsList' });
   };
 
   return (

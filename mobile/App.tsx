@@ -13,8 +13,9 @@ import {Provider} from 'react-redux';
 import configureStore from './src/store';
 import {ThemeProvider} from 'react-native-elements';
 import {theme} from './styles';
-import {NavigationContainer} from '@react-navigation/native';
+
 import {Router} from './src/screens/Router';
+import {NavigationContainer} from '@react-navigation/native';
 
 declare const global: {HermesInternal: null | {}};
 

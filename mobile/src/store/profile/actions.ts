@@ -35,8 +35,9 @@ export const updateProfile = (
   profile: Profile,
 ): ThunkAction<void, RootState, unknown, Action<string>> => async dispatch => {
   await AsyncStorage.setItem("profile", JSON.stringify(profile));
-  return {
-    type: 'FOF',
-  }
+  dispatch({
+    type: 'PROFILE_SUCCESS',
+    payload: profile,
+  });
 };
 
