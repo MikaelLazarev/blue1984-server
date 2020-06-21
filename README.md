@@ -1,7 +1,7 @@
 # Blue1984: Server
 ### Twitter without censorship
 
-![1984v2 008](https://user-images.githubusercontent.com/26343374/83402867-3f7fe600-a410-11ea-9b57-af6149521fff.jpeg)
+![1984v2 008](https://user-images.githubusercontent.com/26343374/85220247-9d21a580-b3b2-11ea-8870-ccc5a0f1d1eb.jpeg)
 
 This anti-censorship app for twitter was designed from scratch especially for Bluzelle hackathon.
 
