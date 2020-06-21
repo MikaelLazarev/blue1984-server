@@ -8,4 +8,4 @@
     "scrapper": "<Python microservice address>",
     "scrapper_token" : "<Python microservice basic auth token>"
   }
-  
+

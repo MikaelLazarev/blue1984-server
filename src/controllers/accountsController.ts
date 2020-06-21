@@ -60,7 +60,7 @@ export class AccountsController {
       console.log(dto);
       try {
         const result = await this._service.list(dto);
-        console.log(result);
+        console.log("LIST" + result);
         res.status(200).json(result);
       } catch (e) {
         console.log(e);

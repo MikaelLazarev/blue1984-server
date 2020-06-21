@@ -3,7 +3,6 @@ import {Tweet, TweetsFull} from "./tweet";
 export interface Account {
   id: string;
   bluID: string;
-  changed?: number;
   deleted?: number;
   cached?: number;
   lastCached?: string;
@@ -90,7 +89,7 @@ export interface AccountsRepositoryI {
 }
 
 export interface AccountsServiceI {
-  create(dto: AccountCreateDTO): Promise<Account[] | undefined>;
+  create(dto: AccountCreateDTO): Promise<AccountCreateDTO| undefined>;
   list(dto: AccountListDTO): Promise<Account[] | undefined>;
   feed(dto: AccountListDTO) : Promise<Tweet[] | undefined>
   retrieve(id: string): Promise<AccountFull>;

@@ -7,6 +7,7 @@ export default (
   res: Response,
   next: NextFunction
 ) => {
+  console.log(err);
   if (err.name === "UnauthorizedError") {
     res.status(403).send("invalid token...");
   } else {

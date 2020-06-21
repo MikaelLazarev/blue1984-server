@@ -12,6 +12,7 @@ export class AccountsRepository implements AccountsRepositoryI {
   }
 
   async create(newAccount: Account): Promise<Account | undefined> {
+
     const existingAcc = await this._blu.findOne(newAccount.id);
 
     if (existingAcc !== undefined) {

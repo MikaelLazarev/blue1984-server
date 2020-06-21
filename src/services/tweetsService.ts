@@ -1,13 +1,10 @@
 import {
-  isEqual,
   Tweet,
   TweetsRepositoryI,
   TweetsServiceI,
 } from "../core/tweet";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../types";
-// @ts-ignore
-import { TimelineStream } from "scrape-twitter";
 
 @injectable()
 export class TweetsService implements TweetsServiceI {
@@ -34,33 +31,23 @@ export class TweetsService implements TweetsServiceI {
     let startTime;
 
     const createList: Tweet[] = [];
-    const updateList: Tweet[] = [];
     const fromTwitter: Tweet[] = [];
     const items = await this._repository.list(blueID);
     if (items === undefined) return 0;
 
-    for (let dto of tweets) {
-      total++;
-
-      if (total > 50) break;
-      fromTwitter.push(dto);
-      const found = items.filter((e) => e.id === dto.id);
-      if (found.length === 0) {
-        dto.wasChanged = false;
-        dto.wasDeleted = false;
-        createList.push(dto);
-      } else {
-        if (!isEqual(found[0], dto)) {
-          dto.wasChanged = true;
+    tweets
+      .sort((a, b) => (a.time > b.time ? 1 : -1))
+      .slice(0, 50)
+      .forEach((dto) => {
+        fromTwitter.push(dto);
+        const found = items.filter((e) => e.id === dto.id);
+        if (found.length === 0) {
           dto.wasDeleted = false;
-          updateList.push(dto);
-          console.log("For", dto.id);
+          createList.push(dto);
         }
-      }
-    }
+      });
 
     console.log("Insert :", createList.length);
-    console.log("Update :", updateList.length);
     console.log("Deleted :", items.length - fromTwitter.length);
     console.log("Total :", total);
 
@@ -72,7 +59,21 @@ export class TweetsService implements TweetsServiceI {
       // Get list for caching
       startTime = Date.now();
       try {
-        console.log(await this._repository.create(blueID, dto));
+        const createDTO: Tweet = {
+          id: dto.id,
+          screenName: dto.screenName,
+          text: dto.text,
+          time: dto.time,
+          isPinned: dto.isPinned,
+          isReplyTo: dto.isReplyTo,
+          isRetweet: dto.isRetweet,
+          urls: dto.urls,
+          hashtags: dto.hashtags,
+          images: dto.images,
+          wasDeleted: dto.wasDeleted,
+        };
+
+        console.log(await this._repository.create(blueID, createDTO));
       } catch (e) {
         console.log(`Error, cant create entry. Error: ${e}`);
         console.log(dto);
@@ -84,20 +85,8 @@ export class TweetsService implements TweetsServiceI {
       // Get list for caching
       startTime = Date.now();
       try {
+        if (dto.wasDeleted) continue;
         dto.wasDeleted = true;
-        console.log(await this._repository.update(blueID, dto));
-      } catch (e) {
-        console.log(`Error, cant update entry. Error: ${e}`);
-        console.log(dto);
-      }
-      console.log(`Insert one for ${Date.now() - startTime} ms`);
-    }
-
-    for (let dto of updateList) {
-      // Get list for caching
-      startTime = Date.now();
-      try {
-        dto.wasChanged = true;
         console.log(await this._repository.update(blueID, dto));
       } catch (e) {
         console.log(`Error, cant update entry. Error: ${e}`);

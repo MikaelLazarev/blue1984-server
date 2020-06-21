@@ -27,7 +27,7 @@ export class BluzelleHelper<T> {
   };
 
   constructor(uuid: string) {
-    this._config = Object.create(BluzelleHelper._globalConfig);
+    this._config = {...BluzelleHelper._globalConfig};
     this._config.uuid = uuid;
     this._uuid = uuid;
   }

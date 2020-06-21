@@ -10,6 +10,7 @@ export interface ConfigParams {
   sentryDSN: string;
   scrapper: string;
   scrapper_token: string;
+  updateDelay: number;
 }
 
 const configSchema = {
@@ -23,6 +24,7 @@ const configSchema = {
     "sentryDSN",
     "scrapper",
     "scrapper_token",
+    "updateDelay",
   ],
 };
 
@@ -45,6 +47,7 @@ export function getConfig(): ConfigParams {
         sentryDSN: process.env.SENTRY_DSN || "",
         scrapper: process.env.SCRAPPER || "https://blue1984-ts.herokuapp.com/",
         scrapper_token: process.env.SCRAPPER_TOKEN || "",
+        updateDelay: parseInt(process.env.UPDATE_DELAY || "60"),
       };
     }
 

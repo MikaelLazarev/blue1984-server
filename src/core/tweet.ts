@@ -20,10 +20,6 @@ export interface Tweet {
   urls: URL[];
   hashtags: string[];
   images: string[];
-  favoriteCount: number;
-  replyCount: number;
-  retweetCount: number;
-  wasChanged: boolean;
   wasDeleted: boolean;
 }
 
