@@ -5,7 +5,7 @@ export interface Account {
   bluID: string;
   deleted?: number;
   cached?: number;
-  lastCached?: string;
+  lastCached?: number;
 
   screenName: string;
   profileImage: string;

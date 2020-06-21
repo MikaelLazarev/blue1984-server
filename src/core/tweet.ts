@@ -13,7 +13,7 @@ export interface Tweet {
   id: string;
   screenName: string;
   text: string;
-  time: string;
+  time: number;
   isPinned: boolean;
   isReplyTo: boolean;
   isRetweet: boolean;

@@ -62,6 +62,7 @@ export class AccountsService implements AccountsServiceI {
       };
 
       await this._repository.create(newAccount);
+      this.startUpdate();
       return { id };
     } catch (e) {
       throw `Account ${id} was not found in Twitter database. \nPlease check it!`;
@@ -69,13 +70,19 @@ export class AccountsService implements AccountsServiceI {
   }
 
   async getUserProfile(account: string): Promise<TwitterProfileDTO> {
-    const response = await this._axiosInstance.get<TwitterProfileDTO>(
-      "/profile/" + account
-    );
-    if (response === undefined) throw "Cant get account";
-    if (response.status === 404) throw "Account not found";
-    this._logger.debug("GOT", response.data);
-    return response.data;
+    try {
+      const response = await this._axiosInstance.get<TwitterProfileDTO>(
+          "/profile/" + account
+      );
+      if (response === undefined) throw "Cant get account";
+      if (response.status !== 200) throw "Account not found";
+      this._logger.debug("GOT", response.data);
+      return response.data;
+    }
+    catch (e) {
+      this._logger.error("Can get profile", e)
+      throw e;
+    }
   }
 
   async getUserTimeline(account: string): Promise<Tweet[]> {
@@ -131,6 +138,7 @@ export class AccountsService implements AccountsServiceI {
   }
 
   startUpdate(): void {
+    this.stopUpdate();
     this._updater = setTimeout(() => this.update(), 1000);
   }
 
@@ -179,22 +187,27 @@ export class AccountsService implements AccountsServiceI {
 
     const tweets = (await this._tweetsRepository.list(acc.bluID)) || [];
     const lastCached =
-      tweets.length === 0 ? "-" : tweets.sort(tweetComparator)[0].time;
+      tweets.length === 0 ? undefined : tweets.sort(tweetComparator)[0].time;
 
     const deleted = tweets.filter((e) => e.wasDeleted).length;
 
     // Got last data from profile
-    const profile: TwitterProfileDTO = await this.getUserProfile(acc.id);
-    const newAccount: Account = {
-      ...acc,
-      ...profile,
-      deleted,
-      lastCached,
-      cached: tweets.length,
-    };
+    try {
+      const profile: TwitterProfileDTO = await this.getUserProfile(acc.id);
+      const newAccount: Account = {
+        ...acc,
+        ...profile,
+        deleted,
+        lastCached,
+        cached: tweets.length,
+      };
 
-    await this._repository.update(newAccount);
+      await this._repository.update(newAccount);
 
-    this._logger.info(`Updated ${updated} tweets for ${acc.id}`);
+      this._logger.info(`Updated ${updated} tweets for ${acc.id}`);
+    } catch (e) {
+      this._logger.error("Error during updading account", e);
+
+    }
   }
 }

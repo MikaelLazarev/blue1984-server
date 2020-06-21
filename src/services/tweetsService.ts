@@ -5,15 +5,19 @@ import {
 } from "../core/tweet";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../types";
+import {getLogger, Logger} from "log4js";
 
 @injectable()
 export class TweetsService implements TweetsServiceI {
   private _repository: TweetsRepositoryI;
+  private _logger : Logger;
 
   public constructor(
     @inject(TYPES.TweetsRepository) repository: TweetsRepositoryI
   ) {
     this._repository = repository;
+    this._logger = getLogger();
+    this._logger.level = 'debug';
   }
 
   retrieve(bluID: string, id: string): Promise<Tweet | undefined> {
@@ -58,12 +62,13 @@ export class TweetsService implements TweetsServiceI {
     for (let dto of createList) {
       // Get list for caching
       startTime = Date.now();
+
       try {
         const createDTO: Tweet = {
           id: dto.id,
           screenName: dto.screenName,
           text: dto.text,
-          time: dto.time,
+          time: Date.parse(dto.time.toString()),
           isPinned: dto.isPinned,
           isReplyTo: dto.isReplyTo,
           isRetweet: dto.isRetweet,
