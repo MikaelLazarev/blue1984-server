@@ -42,12 +42,12 @@ export class TweetsService implements TweetsServiceI {
     tweets
       .sort((a, b) => (a.time > b.time ? 1 : -1))
       .slice(0, 50)
-      .forEach((dto) => {
-        fromTwitter.push(dto);
-        const found = items.filter((e) => e.id === dto.id);
-        if (found.length === 0) {
-          dto.wasDeleted = false;
-          createList.push(dto);
+      .forEach((tweet) => {
+        fromTwitter.push(tweet);
+
+        if (items.find((e) => e.id === tweet.id) === undefined) {
+          tweet.wasDeleted = false;
+          createList.push(tweet);
         }
       });
 

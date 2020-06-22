@@ -19,7 +19,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import axios, { AxiosInstance } from "axios";
 import config from "../config/config";
-import { Logger, getLogger } from 'log4js'
+import { Logger, getLogger } from "log4js";
 
 @injectable()
 export class AccountsService implements AccountsServiceI {
@@ -44,7 +44,7 @@ export class AccountsService implements AccountsServiceI {
       headers: { Authorization: "Basic " + config.scrapper_token },
     });
     this._logger = getLogger();
-    this._logger.level = 'debug';
+    this._logger.level = "debug";
 
     this.startUpdate();
   }
@@ -69,39 +69,18 @@ export class AccountsService implements AccountsServiceI {
     }
   }
 
-  async getUserProfile(account: string): Promise<TwitterProfileDTO> {
-    try {
-      const response = await this._axiosInstance.get<TwitterProfileDTO>(
-          "/profile/" + account
-      );
-      if (response === undefined) throw "Cant get account";
-      if (response.status !== 200) throw "Account not found";
-      this._logger.debug("GOT", response.data);
-      return response.data;
-    }
-    catch (e) {
-      this._logger.error("Can get profile", e)
-      throw e;
-    }
-  }
-
-  async getUserTimeline(account: string): Promise<Tweet[]> {
-    const response = await this._axiosInstance.get<Tweet[]>(
-      "/timeline/" + account
-    );
-    if (response === undefined) throw "Cant get timeline for " + account;
-    this._logger.debug(response.data);
-    return response.data;
-  }
-
   async list(dto: AccountListDTO): Promise<Account[] | undefined> {
     const data = await this._repository.list();
 
     this._logger.debug("ALL ACCOUNTS", data);
     const accountsMap = new Map<string, boolean>();
     dto.accounts.forEach((e) => accountsMap.set(e, true));
-    this._logger.debug(accountsMap);
-    return data?.filter((e) => accountsMap.has(e.id));
+    const userRequestedAccounts = data?.filter((e) => accountsMap.has(e.id));
+    const result : Account[] = [];
+    for(let acc of userRequestedAccounts || []) {
+      result.push(await this.enrichAccountInfo(acc))
+    }
+    return result;
   }
 
   async feed(dto: AccountListDTO): Promise<Tweet[] | undefined> {
@@ -149,18 +128,18 @@ export class AccountsService implements AccountsServiceI {
   }
 
   async update() {
-    this._logger.info("Stating updates...")
+    this._logger.info("Stating updates...");
     const accounts = await this._repository.list();
     if (accounts === undefined) {
       console.log("Nothing to update, cause accounts are empty");
     } else {
-      this._logger.info(`Got ${accounts.length} account for updating.`)
+      this._logger.info(`Got ${accounts.length} account for updating.`);
       for (let acc of accounts) {
         await this.updateAccount(acc);
       }
     }
 
-    this._logger.info(`Update finished, next in ${config.updateDelay} sec`)
+    this._logger.info(`Update finished, next in ${config.updateDelay} sec`);
     this._updater = setTimeout(
       async () => await this.update(),
       config.updateDelay * 1000
@@ -173,11 +152,11 @@ export class AccountsService implements AccountsServiceI {
     try {
       originalTweets = await this.getUserTimeline(acc.id);
     } catch (e) {
-      this._logger.error("Cant get tweets" + e)
-      return
+      this._logger.error("Cant get tweets" + e);
+      return;
     }
 
-    this._logger.debug(`Got ${originalTweets.length} from scrapper`)
+    this._logger.debug(`Got ${originalTweets.length} from scrapper`);
 
     const updated = await this._tweetsService.update(
       acc.id,
@@ -185,21 +164,12 @@ export class AccountsService implements AccountsServiceI {
       originalTweets
     );
 
-    const tweets = (await this._tweetsRepository.list(acc.bluID)) || [];
-    const lastCached =
-      tweets.length === 0 ? undefined : tweets.sort(tweetComparator)[0].time;
-
-    const deleted = tweets.filter((e) => e.wasDeleted).length;
-
     // Got last data from profile
     try {
       const profile: TwitterProfileDTO = await this.getUserProfile(acc.id);
       const newAccount: Account = {
         ...acc,
         ...profile,
-        deleted,
-        lastCached,
-        cached: tweets.length,
       };
 
       await this._repository.update(newAccount);
@@ -207,7 +177,45 @@ export class AccountsService implements AccountsServiceI {
       this._logger.info(`Updated ${updated} tweets for ${acc.id}`);
     } catch (e) {
       this._logger.error("Error during updading account", e);
-
     }
+  }
+
+  private async getUserProfile(account: string): Promise<TwitterProfileDTO> {
+    try {
+      const response = await this._axiosInstance.get<TwitterProfileDTO>(
+        "/profile/" + account
+      );
+      if (response === undefined) throw "Cant get account";
+      if (response.status !== 200) throw "Account not found";
+      this._logger.debug("GOT", response.data);
+      return response.data;
+    } catch (e) {
+      this._logger.error("Can get profile", e);
+      throw e;
+    }
+  }
+
+  private async getUserTimeline(account: string): Promise<Tweet[]> {
+    const response = await this._axiosInstance.get<Tweet[]>(
+      "/timeline/" + account
+    );
+    if (response === undefined) throw "Cant get timeline for " + account;
+    this._logger.debug(response.data);
+    return response.data;
+  }
+
+  private async enrichAccountInfo(account: Account): Promise<Account> {
+    const tweets = (await this._tweetsRepository.list(account.bluID)) || [];
+    const lastCached =
+      tweets.length === 0 ? undefined : tweets.sort(tweetComparator)[0].time;
+
+    const deleted = tweets.filter((e) => e.wasDeleted).length;
+
+    return {
+      ...account,
+      deleted,
+      lastCached,
+      cached: tweets.length,
+    };
   }
 }
