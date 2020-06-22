@@ -47,13 +47,13 @@ Twitter scrapper microservice: https://github.com/MikaelLazarev/blue1984-scrappe
 
 2. Set up & deploy python microservice as its written https://github.com/MikaelLazarev/blue1984-ts#how-to-install
 
-3. Change dir: ```cd blu1984```
+3. Change dir: ```cd blue1984-server```
 
 4. Install all dependencies: ```yarn or npm i```
 
 5. Create a configuration file (do not use json file in production!) ```mv ./src/config/config.sample.json ./src/config/config.json```
 
-6. Open config file and fill with properties:
+6. Open config file./src/config/config.json and fill required properties:
 ```
 {
   "port": <Server port, default: 4000>,
