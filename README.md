@@ -33,7 +33,7 @@ You could connect using web or mobile devices (works both on iOS and Android):
 
 ## Project repostories
 
-Server: https://github.com/MikaelLazarev/blu1984 (core repository)
+Server: https://github.com/MikaelLazarev/blue1984-server (core repository)
 
 Mobile apps: https://github.com/MikaelLazarev/blue1984-mobile
 
@@ -43,13 +43,13 @@ Twitter scrapper microservice: https://github.com/MikaelLazarev/blue1984-scrappe
 
 ## How to install:
 
-1. Clone this repository: ```git clone git@github.com:MikaelLazarev/blu1984.git```
+1. Clone this repository: ```git clone git@github.com:MikaelLazarev/blue1984-server.git```
 
 2. Set up & deploy python microservice as its written https://github.com/MikaelLazarev/blue1984-ts#how-to-install
 
 3. Change dir: ```cd blu1984```
 
-4. Install all dependecies: ```yarn or npm i```
+4. Install all dependencies: ```yarn or npm i```
 
 5. Create a configuration file (do not use json file in production!) ```mv ./src/config/config.sample.json ./src/config/config.json```
 
@@ -63,7 +63,8 @@ Twitter scrapper microservice: https://github.com/MikaelLazarev/blue1984-scrappe
   "mainDB": "<Main Bluzelle DB UUID>",
   "sentryDSN": "<Sentry DSN code>",
   "scrapper": "<Python microservice address>",
-  "scrapper_token" : "<Python microservice basic auth token>"
+  "scrapper_token" : "<Python microservice basic auth token>",
+  "updateDelay": "<delay in seconds between update cycles>"
 }
 ```
 7. Run server for local development with ```yarn dev``` or ```npm run dev```

@@ -6,6 +6,7 @@
     "mainDB": "<Main Bluzelle DB UUID>",
     "sentryDSN": "<Sentry DSN code>",
     "scrapper": "<Python microservice address>",
-    "scrapper_token" : "<Python microservice basic auth token>"
+    "scrapper_token" : "<Python microservice basic auth token>",
+    "updateDelay": "delay in seconds between update cycles"
   }
 
