@@ -1,23 +1,19 @@
-import {
-  Tweet,
-  TweetsRepositoryI,
-  TweetsServiceI,
-} from "../core/tweet";
+import { Tweet, TweetsRepositoryI, TweetsServiceI } from "../core/tweet";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../types";
-import {getLogger, Logger} from "log4js";
+import { getLogger, Logger } from "log4js";
 
 @injectable()
 export class TweetsService implements TweetsServiceI {
   private _repository: TweetsRepositoryI;
-  private _logger : Logger;
+  private _logger: Logger;
 
   public constructor(
     @inject(TYPES.TweetsRepository) repository: TweetsRepositoryI
   ) {
     this._repository = repository;
     this._logger = getLogger();
-    this._logger.level = 'debug';
+    this._logger.level = "debug";
   }
 
   retrieve(bluID: string, id: string): Promise<Tweet | undefined> {
@@ -40,6 +36,7 @@ export class TweetsService implements TweetsServiceI {
     if (items === undefined) return 0;
 
     tweets
+      .splice(0, 500)
       .sort((a, b) => (a.time > b.time ? 1 : -1))
       // .slice(0, 50)
       .forEach((tweet) => {
