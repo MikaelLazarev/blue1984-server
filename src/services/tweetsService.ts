@@ -41,7 +41,7 @@ export class TweetsService implements TweetsServiceI {
 
     tweets
       .sort((a, b) => (a.time > b.time ? 1 : -1))
-      .slice(0, 50)
+      // .slice(0, 50)
       .forEach((tweet) => {
         fromTwitter.push(tweet);
 

@@ -9,9 +9,9 @@ import { TYPES } from "./types";
 import errorHandler from "./middleware/errorHandler";
 import { AccountsController } from "./controllers/accountsController";
 import { TweetsController } from "./controllers/tweetsController";
-import { BluzelleHelper } from "./repository/bluzelleHelper";
 import { DbController } from "./controllers/dbController";
 import * as Sentry from "@sentry/node";
+import {BluzelleAPI} from "./repository/bluzelleAPI";
 
 export function createApp(config: ConfigParams): Promise<Application> {
   return new Promise<Application>(async (resolve) => {
@@ -42,7 +42,7 @@ export function createApp(config: ConfigParams): Promise<Application> {
 
     app.use(bodyParser.json());
 
-    BluzelleHelper.globalConfig = {
+    BluzelleAPI.globalConfig = {
       mnemonic: config.bluzelle_mnemonic,
       uuid: "",
       endpoint: config.bluzelle_endpoint,
