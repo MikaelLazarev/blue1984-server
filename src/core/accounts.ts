@@ -1,4 +1,5 @@
 import {Tweet, TweetsFull} from "./tweet";
+import {IsNotEmpty} from "class-validator";
 
 export interface Account {
   id: string;
@@ -25,23 +26,6 @@ export interface Account {
   likeCount: number;
 }
 
-export interface TwitterProfileDTO {
-  screenName: string;
-  profileImage: string;
-  backgroundImage: string;
-  name: string;
-  bio: string;
-  userMentions: string[];
-  hashtags: string[];
-  urls: [];
-  location: string;
-  url: string;
-  joinDate: string;
-  tweetCount: number;
-  followingCount: number;
-  followerCount: number;
-  likeCount: number;
-}
 
 export interface AccountFull {
   id: string;
@@ -49,37 +33,18 @@ export interface AccountFull {
   tweets: TweetsFull[];
 }
 
-export interface AccountCreateDTO {
+export class AccountCreateDTO {
+  @IsNotEmpty()
   id: string;
+
   list?: string[];
 }
 
-export const accountCreateDTOSchema = {
-  type: "object",
-  required: ["id"],
-  properties: {
-    id: {
-      type: "string",
-    },
-  },
-};
 
-export interface AccountListDTO {
+export class AccountListDTO {
+  @IsNotEmpty()
   accounts: string[];
 }
-
-export const accountListDTOSchema = {
-  type: "object",
-  required: ["accounts"],
-  properties: {
-    accounts: {
-      type: "array",
-      items: {
-        type: "string",
-      },
-    },
-  },
-};
 
 export interface AccountsRepositoryI {
   create(dto: AccountCreateDTO): Promise<Account | undefined>;

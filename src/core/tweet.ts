@@ -9,7 +9,7 @@ interface User {
 }
 
 
-export interface Tweet {
+export class Tweet {
   id: string;
   screenName: string;
   text: string;
@@ -55,14 +55,3 @@ export function tweetComparator(a: Tweet, b: Tweet): number {
   return 1;
 }
 
-export interface TweetsRepositoryI {
-  findOne(bluID: string, id: string): Promise<Tweet | undefined>;
-  create(bluID: string, item: Tweet): Promise<string | undefined>;
-  list(bluID: string): Promise<Tweet[] | undefined>;
-  update(bluID: string, item: Tweet): Promise<void>;
-}
-
-export interface TweetsServiceI {
-  retrieve(bluID: string, id: string): Promise<Tweet | undefined>;
-  update(twitterID: string, blueID: string, tweets: Tweet[]): Promise<number>;
-}

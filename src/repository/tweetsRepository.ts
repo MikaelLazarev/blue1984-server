@@ -1,9 +1,9 @@
-import { Tweet, TweetsRepositoryI } from "../core/tweet";
-import { injectable } from "inversify";
-import { BluzelleHelper } from "./bluzelleHelper";
+import {Tweet} from "../core/tweet";
+import {BluzelleHelper} from "./bluzelleHelper";
+import {Service} from "typedi";
 
-@injectable()
-export class TweetsRepository implements TweetsRepositoryI {
+@Service()
+export class TweetsRepository {
 
   async findOne(bluID: string, id: string): Promise<Tweet | undefined> {
     const bluAPI = new BluzelleHelper<Tweet>(bluID);

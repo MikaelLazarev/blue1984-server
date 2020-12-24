@@ -1,19 +1,5 @@
-import { NextFunction, Request, Response } from "express";
 import * as Sentry from "@sentry/node";
 
-export default (
-  err: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  console.log(err);
-  if (err.name === "UnauthorizedError") {
-    res.status(403).send("invalid token...");
-  } else {
-    next();
-  }
-};
 
 export class ErrorHandler {
   static captureException(error: Error | undefined) {

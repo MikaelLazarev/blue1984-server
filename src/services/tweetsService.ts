@@ -1,17 +1,15 @@
-import { Tweet, TweetsRepositoryI, TweetsServiceI } from "../core/tweet";
-import { inject, injectable } from "inversify";
-import { TYPES } from "../types";
-import { getLogger, Logger } from "log4js";
+import {Tweet} from "../core/tweet";
+import {getLogger, Logger} from "log4js";
+import {Inject, Service} from "typedi";
+import {TweetsRepository} from "../repository/tweetsRepository";
 
-@injectable()
-export class TweetsService implements TweetsServiceI {
-  private _repository: TweetsRepositoryI;
+@Service()
+export class TweetsService {
+  @Inject()
+  private _repository: TweetsRepository;
   private _logger: Logger;
 
-  public constructor(
-    @inject(TYPES.TweetsRepository) repository: TweetsRepositoryI
-  ) {
-    this._repository = repository;
+  constructor() {
     this._logger = getLogger();
     this._logger.level = "debug";
   }
@@ -48,14 +46,15 @@ export class TweetsService implements TweetsServiceI {
         }
       });
 
-    console.log("Insert :", createList.length);
-    console.log("Deleted :", items.length - fromTwitter.length);
-    console.log("Total :", total);
-
     const fromTwitterMap = new Set<string>();
     fromTwitter.forEach((e) => fromTwitterMap.add(e.id));
     const deletedList = items.filter((elm) => !fromTwitterMap.has(elm.id));
 
+    console.log("Insert :", createList.length);
+    console.log("Deleted :", deletedList.length);
+    console.log("Total :", total);
+
+    let progress = 0;
     for (let dto of createList) {
       // Get list for caching
       startTime = Date.now();
@@ -74,8 +73,9 @@ export class TweetsService implements TweetsServiceI {
           images: dto.images,
           wasDeleted: dto.wasDeleted,
         };
-
-        console.log(await this._repository.create(blueID, createDTO));
+        const result = await this._repository.create(blueID, createDTO);
+        console.log(`${progress} of ${createList.length} for creating tweets`);
+        if (progress % 10 === 0) console.log(result);
       } catch (e) {
         console.log(`Error, cant create entry. Error: ${e}`);
         console.log(dto);

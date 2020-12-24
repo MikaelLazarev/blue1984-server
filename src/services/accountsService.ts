@@ -3,49 +3,43 @@ import {
   AccountCreateDTO,
   AccountFull,
   AccountListDTO,
-  AccountsRepositoryI,
   AccountsServiceI,
-  TwitterProfileDTO,
 } from "../core/accounts";
-import { inject, injectable } from "inversify";
-import { TYPES } from "../types";
-import {
-  Tweet,
-  tweetComparator,
-  TweetsFull,
-  TweetsRepositoryI,
-  TweetsServiceI,
-} from "../core/tweet";
+import { Tweet, tweetComparator, TweetsFull } from "../core/tweet";
 import { v4 as uuidv4 } from "uuid";
-import axios, { AxiosInstance } from "axios";
-import config from "../config/config";
-import { Logger, getLogger } from "log4js";
+import { getLogger, Logger } from "log4js";
+import { Container, Inject, Service } from "typedi";
+import { ConfigService } from "../config";
+import { AccountsRepository } from "../repository/accountsRepository";
+import { TweetsRepository } from "../repository/tweetsRepository";
+import { TweetsService } from "./tweetsService";
+import { TwitterRepository } from "../repository/twitterRepository";
+import { AccountDoesntExistError } from "../errors/accountsError";
 
-@injectable()
+@Service()
 export class AccountsService implements AccountsServiceI {
-  private _repository: AccountsRepositoryI;
-  private _tweetsRepository: TweetsRepositoryI;
-  private _tweetsService: TweetsServiceI;
+  @Inject()
+  private _repository: AccountsRepository;
+
+  @Inject()
+  private _tweetsRepository: TweetsRepository;
+
+  @Inject()
+  private _tweetsService: TweetsService;
+
+  @Inject()
+  private _twitterRepository: TwitterRepository;
+
+  private readonly _updateDelay: number;
+
   private _updater: NodeJS.Timeout;
-  private _axiosInstance: AxiosInstance;
+
   private _logger: Logger;
 
-  public constructor(
-    @inject(TYPES.AccountsRepository) repository: AccountsRepositoryI,
-    @inject(TYPES.TweetsService) tweetsService: TweetsServiceI,
-    @inject(TYPES.TweetsRepository) tweetsRepository: TweetsRepositoryI
-  ) {
-    this._repository = repository;
-    this._tweetsService = tweetsService;
-    this._tweetsRepository = tweetsRepository;
-    this._axiosInstance = axios.create({
-      baseURL: config.scrapper,
-      timeout: 100000,
-      headers: { Authorization: "Basic " + config.scrapper_token },
-    });
+  constructor() {
     this._logger = getLogger();
     this._logger.level = "debug";
-
+    this._updateDelay = Container.get(ConfigService).updateDelay;
     this.startUpdate();
   }
 
@@ -54,18 +48,21 @@ export class AccountsService implements AccountsServiceI {
     console.log(id);
 
     try {
-      const profile: TwitterProfileDTO = await this.getUserProfile(id);
+      const profile = await this._twitterRepository.getUserInfo(id);
       const newAccount: Account = {
-        id,
         bluID: uuidv4(),
         ...profile,
+        id
       };
 
-      await this._repository.create(newAccount);
-      this.startUpdate();
+      console.log(newAccount);
+      // await this._repository.create(newAccount);
+      console.log(await this._twitterRepository.getUserTimeline(profile.id));
+      // this.startUpdate();
       return { id };
     } catch (e) {
-      throw `Account ${id} was not found in Twitter database. \nPlease check it!`;
+      console.log(e);
+      throw new AccountDoesntExistError(id);
     }
   }
 
@@ -76,9 +73,9 @@ export class AccountsService implements AccountsServiceI {
     const accountsMap = new Map<string, boolean>();
     dto.accounts.forEach((e) => accountsMap.set(e, true));
     const userRequestedAccounts = data?.filter((e) => accountsMap.has(e.id));
-    const result : Account[] = [];
-    for(let acc of userRequestedAccounts || []) {
-      result.push(await this.enrichAccountInfo(acc))
+    const result: Account[] = [];
+    for (let acc of userRequestedAccounts || []) {
+      result.push(await this.enrichAccountInfo(acc));
     }
     return result;
   }
@@ -139,10 +136,10 @@ export class AccountsService implements AccountsServiceI {
       }
     }
 
-    this._logger.info(`Update finished, next in ${config.updateDelay} sec`);
+    this._logger.info(`Update finished, next in ${this._updateDelay} sec`);
     this._updater = setTimeout(
       async () => await this.update(),
-      config.updateDelay * 1000
+      this._updateDelay * 1000
     );
   }
 
@@ -150,13 +147,13 @@ export class AccountsService implements AccountsServiceI {
     this._logger.info("Updating account " + acc.id);
     let originalTweets: Tweet[] = [];
     try {
-      originalTweets = await this.getUserTimeline(acc.id);
+      originalTweets = await this._twitterRepository.getUserTimeline(acc.id);
     } catch (e) {
       this._logger.error("Cant get tweets" + e);
       return;
     }
 
-    this._logger.debug(`Got ${originalTweets.length} from scrapper`);
+    this._logger.debug(`Got ${originalTweets.length} from twitter`);
 
     const updated = await this._tweetsService.update(
       acc.id,
@@ -166,7 +163,7 @@ export class AccountsService implements AccountsServiceI {
 
     // Got last data from profile
     try {
-      const profile: TwitterProfileDTO = await this.getUserProfile(acc.id);
+      const profile = await this._twitterRepository.getUserInfo(acc.id);
       const newAccount: Account = {
         ...acc,
         ...profile,
@@ -178,30 +175,6 @@ export class AccountsService implements AccountsServiceI {
     } catch (e) {
       this._logger.error("Error during updading account", e);
     }
-  }
-
-  private async getUserProfile(account: string): Promise<TwitterProfileDTO> {
-    try {
-      const response = await this._axiosInstance.get<TwitterProfileDTO>(
-        "/profile/" + account
-      );
-      if (response === undefined) throw "Cant get account";
-      if (response.status !== 200) throw "Account not found";
-      this._logger.debug("GOT", response.data);
-      return response.data;
-    } catch (e) {
-      this._logger.error("Can get profile", e);
-      throw e;
-    }
-  }
-
-  private async getUserTimeline(account: string): Promise<Tweet[]> {
-    const response = await this._axiosInstance.get<Tweet[]>(
-      "/timeline/" + account
-    );
-    if (response === undefined) throw "Cant get timeline for " + account;
-    this._logger.debug(response.data);
-    return response.data;
   }
 
   private async enrichAccountInfo(account: Account): Promise<Account> {

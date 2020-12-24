@@ -2,21 +2,17 @@ GET http://localhost:4000/api/accounts
 Accept: application/json
 
 ###
-POST http://localhost:4000/api/accounts
+POST http://localhost:4000/api/accounts/
 Content-Type: application/json
 
 {
-  "name": "mikhail_8888"
+  "id": "elonmusk"
 }
 
 ###
 
-POST https://blu1984.herokuapp.com/api/accounts/feed/
+GET https://api.twitter.com/2/users/44196397/tweets?max_results=100&tweet.fields=created_at&pagination_token=7140dibdnow9c7btw3w29kzu2cmyizxnwk55y0cu4q9ti
 Content-Type: application/json
-
-{
-  "accounts": ["mikhail_8888"]
-}
 
 ###
 

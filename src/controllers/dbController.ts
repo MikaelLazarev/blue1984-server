@@ -1,10 +1,13 @@
-import { Request, Response } from "express";
-import { Db } from "../core/db";
+import {Db} from "../core/db";
+import {Get, JsonController} from "routing-controllers";
+import {Service} from "typedi";
 
+//app.get("/api/stat/", dbController.retrieve());
+@JsonController("/api/stat")
+@Service()
 export class DbController {
+  @Get("/")
   retrieve() {
-    return (req: Request, res: Response) => {
-      res.status(200).json(Db.getStat());
-    };
+    return Db.getStat();
   }
 }

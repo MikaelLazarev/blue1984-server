@@ -1,31 +1,15 @@
-import { TweetsServiceI } from "../core/tweet";
-import { Request, Response } from "express";
-import { inject, injectable } from "inversify";
-import { TYPES } from "../types";
+import {Get, JsonController, Param} from "routing-controllers";
+import {Inject, Service} from "typedi";
+import {TweetsService} from "../services/tweetsService";
 
-@injectable()
+@JsonController("/api/tweets")
+@Service()
 export class TweetsController {
-  private _service: TweetsServiceI;
+  @Inject()
+  private _service: TweetsService;
 
-  constructor(@inject(TYPES.TweetsService) service: TweetsServiceI) {
-    this._service = service;
-  }
-
-  retrieve() {
-    return async (req: Request, res: Response) => {
-      const blu_id = req.params.blu_id;
-      const id = req.params.id;
-      if (id === undefined) {
-        console.log(id);
-        return res.status(400).send("No id");
-      }
-
-      try {
-        const result = await this._service.retrieve(blu_id, id);
-        res.status(200).json(result);
-      } catch (e) {
-        res.status(400).send();
-      }
-    };
+  @Get("/:blu_id/:id/")
+  async retrieve(@Param("blu_id") blu_id: string, @Param("id") id: string) {
+    return await this._service.retrieve(blu_id, id);
   }
 }

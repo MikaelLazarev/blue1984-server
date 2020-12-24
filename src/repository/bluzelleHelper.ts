@@ -43,8 +43,9 @@ export class BluzelleHelper<T> {
         ErrorHandler.captureException(e);
         return;
       }
+
       console.log(
-        `[Bluzelle FindOne]: Error, DB: ${this._uuid}\n${e} Try attempt: ${
+        `[Bluzelle FindOne]: Error:, DB: ${this._uuid}\n Try attempt: ${
           REPEAT_QTY - repeatQty
         }`
       );
@@ -156,6 +157,7 @@ export class BluzelleHelper<T> {
         ErrorHandler.captureException(e);
         return;
       }
+      console.log(e);
       console.log(
         `[Bluzelle Create]:Error, DB: ${this._uuid}\n${e} Try attempt: ${
           REPEAT_QTY - repeatQty

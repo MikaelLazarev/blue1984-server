@@ -1,6 +1,7 @@
 import { createApp } from "./app";
-import config from "./config/config";
 import { ErrorHandler } from "./middleware/errorHandler";
+import {Container} from "typedi";
+import {ConfigService} from "./config";
 
 process.on("uncaughtException", (e) => {
   ErrorHandler.captureException(e);
@@ -12,7 +13,8 @@ process.on("unhandledRejection", (e) => {
   process.exit(1);
 });
 
-createApp(config).then((server) => {
+createApp().then((server) => {
+  const config = Container.get(ConfigService);
   server.listen(config.port, () =>
     ErrorHandler.captureMessage(`Listening on port ${config.port}...`)
   );

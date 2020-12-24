@@ -1,13 +1,14 @@
-import { Account, AccountsRepositoryI } from "../core/accounts";
-import { BluzelleHelper } from "./bluzelleHelper";
-import { injectable } from "inversify";
-import config from "../config/config";
+import {Account, AccountsRepositoryI} from "../core/accounts";
+import {BluzelleHelper} from "./bluzelleHelper";
+import {Container, Service} from "typedi";
+import {ConfigService} from "../config";
 
-@injectable()
+@Service()
 export class AccountsRepository implements AccountsRepositoryI {
   private _blu: BluzelleHelper<Account>;
 
   constructor() {
+    const config = Container.get(ConfigService);
     this._blu = new BluzelleHelper<Account>(config.mainDB);
   }
 
