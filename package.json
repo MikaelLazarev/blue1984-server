@@ -27,7 +27,7 @@
     "@types/needle": "^2.5.1",
     "@types/readable-stream": "^2.3.6",
     "@types/uuid": "^8.0.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "bluzelle": "^2.1.7",
     "chalk": "^4.0.0",
     "class-transformer": "^0.3.1",
