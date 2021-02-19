@@ -6,9 +6,10 @@ import {AccountsController} from "./controllers/accountsController";
 import {TweetsController} from "./controllers/tweetsController";
 import {DbController} from "./controllers/dbController";
 import * as Sentry from "@sentry/node";
-import {BluzelleAPI} from "./repository/bluzelleAPI";
 import {Container} from "typedi";
 import {ConfigService} from "./config";
+import {TweetsService} from "./services/tweetsService";
+import {AccountsService} from "./services/accountsService";
 
 export async function createApp(): Promise<Application> {
   const config = Container.get(ConfigService);
@@ -32,15 +33,6 @@ export async function createApp(): Promise<Application> {
 
   app.use(morganLogger);
 
-  BluzelleAPI.globalConfig = {
-    mnemonic: config.bluzelle_mnemonic,
-    uuid: "",
-    endpoint: config.bluzelle_endpoint,
-    chain_id: config.bluzelle_chain_id,
-  };
-
-  console.log(`Bluzelle account: ${await BluzelleAPI.getAccount()}`);
-
   useContainer(Container);
   useExpressServer(app, {
     controllers: [AccountsController, TweetsController, DbController],
@@ -49,6 +41,9 @@ export async function createApp(): Promise<Application> {
     },
     validation: true,
   });
+
+  Container.get(AccountsService).postInit();
+  Container.get(TweetsService).startUpdate();;
 
   return require("http").Server(app);
 }

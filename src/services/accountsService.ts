@@ -1,194 +1,108 @@
 import {
   Account,
-  AccountCreateDTO,
-  AccountFull,
-  AccountListDTO,
+  AccountsRepositoryI,
   AccountsServiceI,
 } from "../core/accounts";
-import { Tweet, tweetComparator, TweetsFull } from "../core/tweet";
 import { v4 as uuidv4 } from "uuid";
 import { getLogger, Logger } from "log4js";
-import { Container, Inject, Service } from "typedi";
-import { ConfigService } from "../config";
+import { Container, Service } from "typedi";
 import { AccountsRepository } from "../repository/accountsRepository";
-import { TweetsRepository } from "../repository/tweetsRepository";
-import { TweetsService } from "./tweetsService";
 import { TwitterRepository } from "../repository/twitterRepository";
-import { AccountDoesntExistError } from "../errors/accountsError";
+import {
+  AccountDoesntExistError,
+  AccountNotRegisteredError,
+} from "../errors/accountsError";
+import { TwitterRepositoryI } from "../core/twitter";
+import { AccountCreateDTO, AccountListDTO } from "../payloads/accounts";
+import { TweetsServiceI } from "../core/tweet";
+import { TweetsService } from "./tweetsService";
 
 @Service()
 export class AccountsService implements AccountsServiceI {
-  @Inject()
-  private _repository: AccountsRepository;
+  private readonly _repository: AccountsRepositoryI;
+  private readonly _twitterRepository: TwitterRepositoryI;
+  private _tweetsService: TweetsServiceI;
 
-  @Inject()
-  private _tweetsRepository: TweetsRepository;
-
-  @Inject()
-  private _tweetsService: TweetsService;
-
-  @Inject()
-  private _twitterRepository: TwitterRepository;
-
-  private readonly _updateDelay: number;
-
-  private _updater: NodeJS.Timeout;
-
-  private _logger: Logger;
+  private readonly _logger: Logger;
 
   constructor() {
     this._logger = getLogger();
     this._logger.level = "debug";
-    this._updateDelay = Container.get(ConfigService).updateDelay;
-    this.startUpdate();
+
+    this._repository = Container.get(AccountsRepository);
+    this._twitterRepository = Container.get(TwitterRepository);
   }
 
-  async create(dto: AccountCreateDTO): Promise<AccountCreateDTO | undefined> {
-    const id = dto.id.startsWith("@") ? dto.id.substr(1) : dto.id;
-    console.log(id);
-
-    try {
-      const profile = await this._twitterRepository.getUserInfo(id);
-      const newAccount: Account = {
-        bluID: uuidv4(),
-        ...profile,
-        id
-      };
-
-      console.log(newAccount);
-      // await this._repository.create(newAccount);
-      console.log(await this._twitterRepository.getUserTimeline(profile.id));
-      // this.startUpdate();
-      return { id };
-    } catch (e) {
-      console.log(e);
-      throw new AccountDoesntExistError(id);
-    }
+  postInit() {
+    this._tweetsService = Container.get(TweetsService);
   }
 
-  async list(dto: AccountListDTO): Promise<Account[] | undefined> {
+  create(dto: AccountCreateDTO): Promise<AccountCreateDTO | undefined> {
+    return new Promise<AccountCreateDTO | undefined>(
+      async (resolve, reject) => {
+        let username = dto.id.startsWith("@") ? dto.id.substr(1) : dto.id;
+        username = username.toLowerCase();
+
+        try {
+          const profile = await this._twitterRepository.getUserInfo(username);
+
+          console.log("PROFILE", profile);
+          const newAccount: Account = {
+            bluID: uuidv4(),
+            ...profile,
+          };
+
+          await this._repository.getOrCreate(newAccount);
+          // console.log(await this._twitterRepository.getUserTimeline(profile.id));
+          // this.startUpdate();
+          resolve({ id: profile.id });
+
+          // Update data for new account
+          await this._tweetsService.update(newAccount);
+        } catch (e) {
+          console.log(e);
+          reject(new AccountDoesntExistError(username));
+        }
+      }
+    );
+  }
+
+  async list(dto: AccountListDTO): Promise<Account[]> {
     const data = await this._repository.list();
 
     this._logger.debug("ALL ACCOUNTS", data);
-    const accountsMap = new Map<string, boolean>();
-    dto.accounts.forEach((e) => accountsMap.set(e, true));
-    const userRequestedAccounts = data?.filter((e) => accountsMap.has(e.id));
-    const result: Account[] = [];
-    for (let acc of userRequestedAccounts || []) {
-      result.push(await this.enrichAccountInfo(acc));
-    }
-    return result;
+    const accounts = dto.accounts.map((a) => a.toLowerCase());
+    const userAccountsSet = new Set<string>(accounts);
+    return data?.filter((e) => userAccountsSet.has(e.id)) || [];
   }
 
-  async feed(dto: AccountListDTO): Promise<Tweet[] | undefined> {
-    const accounts = await this.list(dto);
-    const result: Tweet[] = [];
-    if (accounts === undefined) return;
-    for (let acc of accounts) {
-      const accFull = (await this.retrieve(acc.id)) || [];
-      accFull.tweets.map((t) => result.push(t));
-    }
-
-    return result.sort(tweetComparator);
-  }
-
-  async retrieve(id: string): Promise<AccountFull> {
+  async retrieve(id: string): Promise<Account> {
     const account = await this._repository.findOne(id);
-    console.log("ACCOUNT", account);
-    if (account === undefined) throw "This account is not registered in system";
-    const tweets = (await this._tweetsRepository.list(account.bluID)) || [];
-
-    const tweetsFull: TweetsFull[] = tweets.map((e) => ({
-      ...e,
-      user: {
-        name: account.name,
-        avatar: account.profileImage,
-        nickname: e.screenName,
-      },
-    }));
-
-    return {
-      ...account,
-      tweets: tweetsFull.sort(tweetComparator),
-    };
+    if (account === undefined) throw new AccountNotRegisteredError(id);
+    return account;
   }
 
-  startUpdate(): void {
-    this.stopUpdate();
-    this._updater = setTimeout(() => this.update(), 1000);
-  }
-
-  stopUpdate(): void {
-    if (this._updater) {
-      clearTimeout(this._updater);
-    }
-  }
-
-  async update() {
-    this._logger.info("Stating updates...");
-    const accounts = await this._repository.list();
-    if (accounts === undefined) {
-      console.log("Nothing to update, cause accounts are empty");
-    } else {
-      this._logger.info(`Got ${accounts.length} account for updating.`);
-      for (let acc of accounts) {
-        await this.updateAccount(acc);
-      }
-    }
-
-    this._logger.info(`Update finished, next in ${this._updateDelay} sec`);
-    this._updater = setTimeout(
-      async () => await this.update(),
-      this._updateDelay * 1000
-    );
-  }
-
-  private async updateAccount(acc: Account): Promise<void> {
+  async updateAccount(
+    acc: Account,
+    cached: number,
+    deleted: number
+  ): Promise<void> {
     this._logger.info("Updating account " + acc.id);
-    let originalTweets: Tweet[] = [];
-    try {
-      originalTweets = await this._twitterRepository.getUserTimeline(acc.id);
-    } catch (e) {
-      this._logger.error("Cant get tweets" + e);
-      return;
-    }
-
-    this._logger.debug(`Got ${originalTweets.length} from twitter`);
-
-    const updated = await this._tweetsService.update(
-      acc.id,
-      acc.bluID,
-      originalTweets
-    );
 
     // Got last data from profile
     try {
-      const profile = await this._twitterRepository.getUserInfo(acc.id);
+      const profile = await this._twitterRepository.getUserInfo(acc.username);
+
       const newAccount: Account = {
         ...acc,
         ...profile,
+        cached,
+        deleted,
       };
 
       await this._repository.update(newAccount);
-
-      this._logger.info(`Updated ${updated} tweets for ${acc.id}`);
     } catch (e) {
       this._logger.error("Error during updading account", e);
     }
-  }
-
-  private async enrichAccountInfo(account: Account): Promise<Account> {
-    const tweets = (await this._tweetsRepository.list(account.bluID)) || [];
-    const lastCached =
-      tweets.length === 0 ? undefined : tweets.sort(tweetComparator)[0].time;
-
-    const deleted = tweets.filter((e) => e.wasDeleted).length;
-
-    return {
-      ...account,
-      deleted,
-      lastCached,
-      cached: tweets.length,
-    };
   }
 }

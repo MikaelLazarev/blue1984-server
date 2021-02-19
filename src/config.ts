@@ -18,9 +18,6 @@ export class ConfigService {
   bluzelle_endpoint: string;
 
   @IsNotEmpty()
-  bluzelle_chain_id: string;
-
-  @IsNotEmpty()
   mainDB: string;
 
   @IsNotEmpty()
@@ -32,6 +29,9 @@ export class ConfigService {
   @IsNotEmpty()
   twitterBearerToken: string;
 
+  @IsNotEmpty()
+  dbType: string;
+
   constructor() {
     config();
 
@@ -39,11 +39,11 @@ export class ConfigService {
 
     this.bluzelle_mnemonic = process.env.BLUZELLE_MNEMONIC || "";
     this.bluzelle_endpoint = process.env.BLUZELLE_ENDPOINT || "";
-    this.bluzelle_chain_id = process.env.BLUZELLE_CHAIN_ID || "";
     this.mainDB = process.env.MAIN_DB || "";
     this.sentryDSN = process.env.SENTRY_DSN || "";
     this.updateDelay = parseInt(process.env.UPDATE_DELAY || "0");
     this.twitterBearerToken = process.env.TWITTER_BEARER_TOKEN || "";
+    this.dbType =  process.env.DB_TYPE || "";
   }
 
   async validate() {

@@ -60,3 +60,6 @@ buck-out/
 *.jsbundle
 
 src/config/*.json
+/.env
+/src/controllers/twitter.http
+/src/repository/twitter.ts

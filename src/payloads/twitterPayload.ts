@@ -1,9 +1,23 @@
+import {IsNotEmpty} from "class-validator";
+
 export class TwitterProfileDTO {
+
+  @IsNotEmpty()
   id: string;
-  screenName: string;
+
+  @IsNotEmpty()
+  username: string;
+
+  @IsNotEmpty()
+  name: string;
+
+  description: string;
+
+
+  // OLD
   profileImage: string;
   backgroundImage: string;
-  name: string;
+
   bio: string;
   userMentions: string[];
   hashtags: string[];

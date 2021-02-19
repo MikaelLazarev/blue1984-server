@@ -1,57 +1,78 @@
-interface URL {
-  indices: number[];
+import { IsNotEmpty } from "class-validator";
+import { Account } from "./accounts";
+import { AccountListDTO } from "../payloads/accounts";
+import { FeedQuery, TweetsListDTO } from "../payloads/tweets";
+import { TwitterAccount } from "./twitter";
+
+export interface TweetURL {
+  start: number;
+  end: number;
+  url: string;
+  expanded_url: string;
+  display_url: string;
+}
+
+export class TweetMedia {
+  media_key: string;
+  type: string;
   url: string;
 }
-interface User {
-  avatar: string,
-  nickname: string,
-  name: string,
+
+export class Mention {
+  start: number;
+  end: number;
+  username: string;
 }
 
+export class HashTag {
+  start: number;
+  end: number;
+  tag: number;
+}
 
 export class Tweet {
+  @IsNotEmpty()
   id: string;
-  screenName: string;
+
+  @IsNotEmpty()
   text: string;
-  time: number;
-  isPinned: boolean;
-  isReplyTo: boolean;
-  isRetweet: boolean;
-  urls: URL[];
-  hashtags: string[];
-  images: string[];
+
+  @IsNotEmpty()
+  created_at: Date;
+
+  entities: {
+    mentions: Array<Mention>;
+    urls: Array<TweetURL>;
+    hashtags: Array<HashTag>;
+  };
+
+  @IsNotEmpty()
+  author_id: string;
+
+  author?: TwitterAccount;
+
+  media: Array<TweetMedia>;
+
   wasDeleted: boolean;
-}
 
-
-export interface TweetsFull extends Tweet{
-  user?: User;
-}
-
-function check<T>(name: string, a: T, b: T): boolean {
-  if (a !== b) {
-    console.log(`${name} changed ${a} != ${b} `);
-    return true;
-  }
-  return false;
-}
-
-export function isEqual(a: Tweet, b: Tweet): boolean {
-  if (
-    check("screen name", a.screenName, b.screenName) ||
-    check("text", a.text, b.text) ||
-    check("time", a.time, b.time) ||
-    check("urls", JSON.stringify(a.urls), JSON.stringify(b.urls)) ||
-    check("hashtags", JSON.stringify(a.hashtags), JSON.stringify(b.hashtags)) ||
-    check("images", JSON.stringify(a.images), JSON.stringify(b.images))
-  ) {
-    return false;
-  }
-  return true;
+  attachments: {
+    media_keys: Array<string>;
+  };
 }
 
 export function tweetComparator(a: Tweet, b: Tweet): number {
-  if (a.time > b.time) return -1;
+  if (a.created_at > b.created_at) return -1;
   return 1;
 }
 
+export interface TweetsRepositoryI {
+  findOne(bluID: string, id: string): Promise<Tweet | undefined>;
+  create(bluID: string, item: Tweet): Promise<string | undefined>;
+  list(bluID: string): Promise<Tweet[] | undefined>;
+  update(bluID: string, item: Tweet): Promise<void>;
+}
+
+export interface TweetsServiceI {
+  feed(dto: AccountListDTO, query: FeedQuery): Promise<TweetsListDTO>;
+  update(account: Account): Promise<void>;
+}

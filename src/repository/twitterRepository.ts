@@ -1,31 +1,46 @@
 import needle from "needle";
 import { Container, Service } from "typedi";
 import { transformAndValidate } from "class-transformer-validator";
-import { TwitterRepositoryI } from "../core/twitter";
+import { TwitterAccount, TwitterRepositoryI } from "../core/twitter";
 
-import { TwitterProfileDTO } from "../payloads/twitter";
-import { Tweet } from "../core/tweet";
+import { TwitterProfileDTO } from "../payloads/twitterPayload";
+import { Tweet, TweetMedia, TweetURL } from "../core/tweet";
 import { ConfigService } from "../config";
+import { IncorrectTwitterResponse } from "../errors/twitterErrors";
+import { Logger } from "tslog";
 
 interface TimelineParams {
   max_results: number;
-  "tweet.fields": string;
+  "tweet.fields"?: string;
+  "user.fields"?: string;
+  "media.fields"?: string;
+  expansions?: string;
+  exclude?: "replies" | "retweets" | "retweets, replies";
   pagination_token?: string | null;
 }
 
-interface TimelineResponse {
+export interface TimelineResponse {
   meta?: {
     result_count: number;
     next_token: string;
   };
   data?: Tweet[];
+  includes?: any;
 }
 
 @Service()
 export class TwitterRepository implements TwitterRepositoryI {
   private readonly _bearerToken: string;
 
+  private readonly _logger: Logger;
+
   constructor() {
+    this._logger = new Logger({
+      minLevel: "debug",
+      displayFunctionName: false,
+      displayLoggerName: false,
+      displayFilePath: "hidden",
+    });
     const config = Container.get(ConfigService);
     this._bearerToken = config.twitterBearerToken;
   }
@@ -33,25 +48,24 @@ export class TwitterRepository implements TwitterRepositoryI {
   async getUserInfo(id: string): Promise<TwitterProfileDTO> {
     const params = {
       usernames: id, // Edit usernames to look up
-      "user.fields": "created_at,description", // Edit optional query parameters here
+      "user.fields": "created_at,description,profile_image_url,name", // Edit optional query parameters here
     };
 
     const res = await this._apiRequest(
       "https://api.twitter.com/2/users/by?usernames=",
       params
     );
-    console.log("RRR", res);
     if (!res.body || res.statusCode !== 200)
-      throw new Error("Unsuccessful request");
+      throw new IncorrectTwitterResponse();
 
-    if (!res.body?.data) throw new Error("Incorrect twitter response");
+    if (!res.body?.data) throw new IncorrectTwitterResponse();
+
     const result = (await transformAndValidate(
       TwitterProfileDTO,
       res.body?.data
     )) as TwitterProfileDTO[];
 
-    if (result.length === 0) throw new Error("Incorrect twitter response");
-
+    if (result.length === 0) throw new IncorrectTwitterResponse();
     return result[0];
   }
 
@@ -62,10 +76,14 @@ export class TwitterRepository implements TwitterRepositoryI {
 
     let params: TimelineParams = {
       max_results: 100,
-      "tweet.fields": "created_at",
+      "tweet.fields": "created_at,author_id,attachments,entities",
+      "user.fields": "name,profile_image_url,url,username",
+      "media.fields": "media_key,preview_image_url,type,url",
+      expansions: "author_id,attachments.media_keys",
+      exclude: "replies",
     };
 
-    console.log("Retrieving Tweets...", account);
+    this._logger.debug("Getting user timeline..", account);
 
     while (true) {
       const resp = (await this._getPage(
@@ -74,14 +92,57 @@ export class TwitterRepository implements TwitterRepositoryI {
         nextToken
       )) as TimelineResponse;
 
-      console.log("META", resp?.meta);
+      this._logger.debug("META", resp?.meta);
       if (resp?.meta?.result_count && resp.meta.result_count > 0) {
         if (resp.data) {
           const newTweets = (await transformAndValidate(
             Tweet,
-            resp.data
+            resp.data  || []
           )) as Tweet[];
-          result.push(...newTweets);
+
+          this._logger.debug(newTweets);
+
+          const users = (await transformAndValidate(
+            TwitterAccount,
+            resp.includes.users  || []
+          )) as TwitterAccount[];
+
+          const usersMap = new Map<string, TwitterAccount>();
+          users.forEach((u) => usersMap.set(u.id, u));
+
+          this._logger.debug( resp.includes.media);
+          const media = (await transformAndValidate(
+            TweetMedia,
+            resp.includes.media || []
+          )) as TweetMedia[];
+
+          const mediaMap = new Map<string, TweetMedia>();
+          media.forEach((m) => mediaMap.set(m.media_key, m));
+
+          const newTweetsWithAuthor = newTweets.map((tweet) => {
+            tweet.author = usersMap.get(tweet.author_id);
+
+            if (tweet.entities?.urls?.length > 1) {
+              const urlsSet = new Map<number, TweetURL>();
+              tweet.entities.urls.forEach((url) =>
+                urlsSet.set(url.start * 10000 + url.end, url)
+              );
+              tweet.entities.urls = [...urlsSet.values()];
+            }
+
+            if (tweet.attachments?.media_keys) {
+              tweet.media = [];
+              for (let mk of tweet.attachments?.media_keys) {
+                const media = mediaMap.get(mk);
+                if (media) tweet.media.push(media);
+              }
+            }
+            return tweet;
+          });
+
+          this._logger.debug(JSON.stringify(newTweetsWithAuthor));
+
+          result.push(...newTweetsWithAuthor);
         }
 
         nextToken = resp?.meta?.next_token || null;
@@ -91,7 +152,7 @@ export class TwitterRepository implements TwitterRepositoryI {
       }
     }
 
-    console.log(`Got ${result.length} Tweets from ${account}!`);
+    this._logger.info(`Got ${result.length} Tweets from ${account}!`);
     return result;
   }
 
@@ -105,10 +166,10 @@ export class TwitterRepository implements TwitterRepositoryI {
     }
 
     try {
-      console.log("PARAMS", params);
       const resp = await needle("get", endpoint, params, this._authOptions);
 
       if (resp.statusCode != 200) {
+        this._logger.error(resp.headers);
         throw new Error(
           `Twitter API error: ${resp.statusCode} ${resp.statusMessage}:\n${resp.body}`
         );

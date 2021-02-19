@@ -1,26 +1,21 @@
-GET http://localhost:4000/api/accounts
-Accept: application/json
-
-###
+### NEW ACCOUNTT
 POST http://localhost:4000/api/accounts/
 Content-Type: application/json
 
 {
-  "id": "elonmusk"
+  "id": "navalny"
 }
 
-###
-
-GET https://api.twitter.com/2/users/44196397/tweets?max_results=100&tweet.fields=created_at&pagination_token=7140dibdnow9c7btw3w29kzu2cmyizxnwk55y0cu4q9ti
+### LIST ACCOUNTS
+POST http://localhost:4000/api/accounts/list/
 Content-Type: application/json
 
-###
+{
+  "accounts": [ "44196397"]
+}
 
-GET http://localhost:4000/api/accounts/stop
-Accept: application/json
-###
+### RETRIEVE
 
-GET http://localhost:4000/api/tweets/mikhail_8888
-Accept: application/json
-
+GET http://localhost:4000/api/accounts/44196397/
+Content-Type: application/json
 

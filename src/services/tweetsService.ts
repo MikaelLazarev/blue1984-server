@@ -1,102 +1,176 @@
-import {Tweet} from "../core/tweet";
-import {getLogger, Logger} from "log4js";
-import {Inject, Service} from "typedi";
-import {TweetsRepository} from "../repository/tweetsRepository";
+import {
+  Tweet,
+  tweetComparator,
+  TweetsRepositoryI,
+  TweetsServiceI,
+} from "../core/tweet";
+import { Container, Service } from "typedi";
+import { TweetsRepository } from "../repository/tweetsRepository";
+import {
+  Account,
+  AccountsRepositoryI,
+  AccountsServiceI,
+} from "../core/accounts";
+import { AccountsRepository } from "../repository/accountsRepository";
+import { AccountListDTO } from "../payloads/accounts";
+import { AccountsService } from "./accountsService";
+import { TwitterRepositoryI } from "../core/twitter";
+import { ConfigService } from "../config";
+import { TwitterRepository } from "../repository/twitterRepository";
+import { FeedQuery, TweetsListDTO } from "../payloads/tweets";
+import { ErrorHandler } from "../middleware/errorHandler";
+import {Logger} from "tslog";
 
 @Service()
-export class TweetsService {
-  @Inject()
-  private _repository: TweetsRepository;
-  private _logger: Logger;
+export class TweetsService implements TweetsServiceI {
+  private readonly _repository: TweetsRepositoryI;
+  private readonly _accountRepository: AccountsRepositoryI;
+  private readonly _accountService: AccountsServiceI;
+  private readonly _twitterRepository: TwitterRepositoryI;
+  private readonly _updateDelay: number;
+  private readonly _logger: Logger;
+  private _updater: NodeJS.Timeout;
 
   constructor() {
-    this._logger = getLogger();
-    this._logger.level = "debug";
+    this._logger = new Logger({
+      minLevel: "debug",
+      displayFunctionName: false,
+      displayLoggerName: false,
+      displayFilePath: "hidden",
+    });
+    this._repository = Container.get(TweetsRepository);
+    this._accountRepository = Container.get(AccountsRepository);
+    this._accountService = Container.get(AccountsService);
+    this._twitterRepository = Container.get(TwitterRepository);
+    this._updateDelay = Container.get(ConfigService).updateDelay;
+
+    this.startUpdate();
   }
 
-  retrieve(bluID: string, id: string): Promise<Tweet | undefined> {
-    return this._repository.findOne(bluID, id);
+  async feed(
+    dto: AccountListDTO,
+    feedQuery: FeedQuery
+  ): Promise<TweetsListDTO> {
+    const accounts = await this._accountService.list(dto);
+    if (accounts.length === 0) return new TweetsListDTO([]);
+    const allTweets: Tweet[] = [];
+    for (let account of accounts) {
+      const tweets = (await this._repository.list(account.bluID)) || [];
+      const tweetsFiltered = feedQuery.showDeleted
+        ? tweets.filter((e) => e.wasDeleted)
+        : tweets;
+      allTweets.push(...tweetsFiltered);
+    }
+
+
+    const start = feedQuery.offset;
+    const end = Math.min(allTweets.length, start + feedQuery.limit);
+
+    const tweetsResponse = allTweets.sort(tweetComparator).slice(start, end);
+    this._logger.debug(tweetsResponse);
+
+    return new TweetsListDTO(
+      tweetsResponse,
+      end !== allTweets.length ? end : undefined
+    );
   }
 
-  async update(
-    twitterID: string,
-    blueID: string,
-    tweets: Tweet[]
-  ): Promise<number> {
-    console.log(`Updating ${twitterID} with ${blueID}`);
+  startUpdate() {
+    console.log("Updates started...");
+    this.stopUpdate();
+    // this._updater = setTimeout(async () => await this.updateAll(), 1000);
+  }
 
-    let total = 0;
-    let startTime;
+  stopUpdate() {
+    if (this._updater) {
+      clearTimeout(this._updater);
+    }
+  }
 
-    const createList: Tweet[] = [];
-    const fromTwitter: Tweet[] = [];
-    const items = await this._repository.list(blueID);
-    if (items === undefined) return 0;
-
-    tweets
-      .splice(0, 500)
-      .sort((a, b) => (a.time > b.time ? 1 : -1))
-      // .slice(0, 50)
-      .forEach((tweet) => {
-        fromTwitter.push(tweet);
-
-        if (items.find((e) => e.id === tweet.id) === undefined) {
-          tweet.wasDeleted = false;
-          createList.push(tweet);
-        }
-      });
-
-    const fromTwitterMap = new Set<string>();
-    fromTwitter.forEach((e) => fromTwitterMap.add(e.id));
-    const deletedList = items.filter((elm) => !fromTwitterMap.has(elm.id));
-
-    console.log("Insert :", createList.length);
-    console.log("Deleted :", deletedList.length);
-    console.log("Total :", total);
-
-    let progress = 0;
-    for (let dto of createList) {
-      // Get list for caching
-      startTime = Date.now();
-
-      try {
-        const createDTO: Tweet = {
-          id: dto.id,
-          screenName: dto.screenName,
-          text: dto.text,
-          time: Date.parse(dto.time.toString()),
-          isPinned: dto.isPinned,
-          isReplyTo: dto.isReplyTo,
-          isRetweet: dto.isRetweet,
-          urls: dto.urls,
-          hashtags: dto.hashtags,
-          images: dto.images,
-          wasDeleted: dto.wasDeleted,
-        };
-        const result = await this._repository.create(blueID, createDTO);
-        console.log(`${progress} of ${createList.length} for creating tweets`);
-        if (progress % 10 === 0) console.log(result);
-      } catch (e) {
-        console.log(`Error, cant create entry. Error: ${e}`);
-        console.log(dto);
+  async updateAll() {
+    console.log("Stating updates...");
+    const accounts = await this._accountRepository.list();
+    if (accounts === undefined) {
+      console.log("Nothing to update, cause accounts are empty");
+    } else {
+      this._logger.info(`Got ${accounts.length} account for updating.`);
+      for (let acc of accounts) {
+        setImmediate(async () => await this.update(acc));
       }
-      console.log(`Insert one for ${Date.now() - startTime} ms`);
     }
 
-    for (let dto of deletedList) {
-      // Get list for caching
-      startTime = Date.now();
-      try {
-        if (dto.wasDeleted) continue;
-        dto.wasDeleted = true;
-        console.log(await this._repository.update(blueID, dto));
-      } catch (e) {
-        console.log(`Error, cant update entry. Error: ${e}`);
-        console.log(dto);
-      }
-      console.log(`Insert one for ${Date.now() - startTime} ms`);
-    }
+    this._logger.info(`Update finished, next in ${this._updateDelay} sec`);
+    this._updater = setTimeout(
+      async () => await this.updateAll(),
+      this._updateDelay * 1000
+    );
+  }
 
-    return tweets.length;
+  async update(account: Account) {
+    const { username, bluID } = account;
+    this._logger.info(`Updating ${username} with ${bluID}`);
+
+    try {
+      const tweets = await this._twitterRepository.getUserTimeline(account.id);
+
+      const savedTweets = await this._repository.list(bluID);
+      if (savedTweets === undefined) return;
+
+      const savedTweetsId = new Set<string>(savedTweets.map((t) => t.id));
+      const fromTwittersId = new Set<string>(tweets.map((t) => t.id));
+
+      const deletedTweets = savedTweets.filter(
+        (t) => !fromTwittersId.has(t.id)
+      );
+      const newTweets = tweets.filter((t) => !savedTweetsId.has(t.id));
+
+      this._logger.info(`New tweets to inserts: ${newTweets.length}`);
+      this._logger.info(`Total deleted tweets: ${deletedTweets.length}`);
+
+      await this._createTweets(bluID, newTweets);
+      await this._labelDeletedTweets(bluID, deletedTweets);
+
+      await this._accountService.updateAccount(
+        account,
+        savedTweets.length + newTweets.length,
+        deletedTweets.length
+      );
+    } catch (e) {
+      ErrorHandler.captureException(e);
+    }
+  }
+
+  private async _createTweets(blueID: string, newTweets: Tweet[]) {
+    for (let i = 0; i < newTweets.length; i++) {
+      // Get list for caching
+      const startTime = Date.now();
+
+      try {
+        await this._repository.create(blueID, newTweets[i]);
+
+        if (i % 10 === 0)
+          this._logger.info(`${i} of ${newTweets.length} for creating tweets`);
+      } catch (e) {
+        this._logger.error(`Error, cant create entry. Error: ${e}`);
+        this._logger.error(newTweets[i]);
+      }
+      this._logger.info(`Insert one for ${Date.now() - startTime} ms`);
+    }
+  }
+
+  private async _labelDeletedTweets(blueID: string, deletedTweets: Tweet[]) {
+    for (let tweet of deletedTweets) {
+      // Get list for caching
+      const startTime = Date.now();
+      try {
+        if (tweet.wasDeleted) continue;
+        tweet.wasDeleted = true;
+        await this._repository.update(blueID, tweet);
+      } catch (e) {
+        this._logger.error(`Error, cant update entry. Error: ${e}`);
+        this._logger.error(tweet);
+      }
+      this._logger.info(`Updating ccount ${Date.now() - startTime} ms`);
+    }
   }
 }

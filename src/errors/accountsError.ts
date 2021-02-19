@@ -5,3 +5,9 @@ export class AccountDoesntExistError extends NotFoundError {
         super(`${account} doesn't exists`);
     }
 }
+
+export class AccountNotRegisteredError extends NotFoundError {
+    constructor(account: string) {
+        super(`${account}'s not registered`);
+    }
+}

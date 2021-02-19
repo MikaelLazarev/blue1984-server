@@ -14,11 +14,10 @@
   "resolutions": {
     "tslib": "1.11.2"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Mikael Lazarev",
+  "license": "MIT",
   "dependencies": {
     "@sentry/node": "5.15.5",
-    "@types/axios": "^0.14.0",
     "@types/cors": "^2.8.9",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.6",
@@ -27,8 +26,7 @@
     "@types/needle": "^2.5.1",
     "@types/readable-stream": "^2.3.6",
     "@types/uuid": "^8.0.0",
-    "axios": "^0.19.2",
-    "bluzelle": "^2.1.7",
+    "bluzelle": "^3.0.0",
     "chalk": "^4.0.0",
     "class-transformer": "^0.3.1",
     "class-transformer-validator": "^0.9.1",
@@ -48,12 +46,17 @@
     "routing-controllers": "^0.9.0-alpha.6",
     "ts-node": "^8.10.1",
     "tslib": "^2.0.0",
-    "twitter-lite": "^0.13.0",
+    "tslog": "^3.1.1",
     "typedi": "^0.8.0",
     "typescript": "^3.9.2",
     "uuid": "^8.1.0"
   },
   "devDependencies": {
     "prettier": "^2.0.5"
+  },
+  "eslintConfig": {
+    "rules": {
+      "@typescript-eslint/no-unused-vars": "off"
+    }
   }
 }

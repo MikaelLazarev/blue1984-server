@@ -3,21 +3,22 @@
  * Copyright (c) 2020. Mikhail Lazarev
  */
 
-import { API } from "bluzelle";
-import { v4 as uuidv4 } from "uuid";
+import {v4 as uuidv4} from "uuid";
 import NodeCache from "node-cache";
-import { Db } from "../core/db";
-import { ErrorHandler } from "../middleware/errorHandler";
-import { BluzelleAPI } from "./bluzelleAPI";
+import {Db} from "../core/db";
+import {ErrorHandler} from "../middleware/errorHandler";
+import {KeyValueDB, KeyValueDBManager} from "../core/keyValueDB";
 
 const REPEAT_QTY = 2;
 
-export class BluzelleHelper<T> {
+export class KvCachedDB<T> {
   private static _cache = new NodeCache({ deleteOnExpire: true, stdTTL: 100 });
 
+  private readonly _dbManager: KeyValueDBManager;
   private readonly _uuid: string;
 
-  constructor(uuid: string) {
+  constructor(dbManager: KeyValueDBManager, uuid: string) {
+    this._dbManager = dbManager;
     this._uuid = uuid;
   }
 
@@ -27,9 +28,9 @@ export class BluzelleHelper<T> {
 
   async findOne(id: string, repeat?: number): Promise<T | undefined> {
     try {
-      if (BluzelleHelper._cache.has(this.getItemHash(id))) {
+      if (KvCachedDB._cache.has(this.getItemHash(id))) {
         console.log("got from cache");
-        return BluzelleHelper._cache.get<T>(this.getItemHash(id));
+        return KvCachedDB._cache.get<T>(this.getItemHash(id));
       }
 
       const api = await this.findInList(id, this._uuid);
@@ -56,11 +57,11 @@ export class BluzelleHelper<T> {
   private async findInList(
     key: string,
     initialUUID: string
-  ): Promise<API | undefined> {
+  ): Promise<KeyValueDB | undefined> {
     let next = initialUUID;
     while (true) {
       // Calculates time for each operation
-      const api = await BluzelleAPI.getBluzelle(next);
+      const api = await this._dbManager.get(next);
       if (await api.has(key)) {
         return api;
       }
@@ -73,8 +74,8 @@ export class BluzelleHelper<T> {
 
   async list(repeat?: number): Promise<T[] | undefined> {
     try {
-      if (BluzelleHelper._cache.has(this.getLishHash())) {
-        return BluzelleHelper._cache.get<T[]>(this.getLishHash());
+      if (KvCachedDB._cache.has(this.getLishHash())) {
+        return KvCachedDB._cache.get<T[]>(this.getLishHash());
       }
 
       let data: T[] = [];
@@ -83,7 +84,7 @@ export class BluzelleHelper<T> {
       do {
         // Calculates time for each operation
         const startTime = Date.now();
-        const api = await BluzelleAPI.getBluzelle(next);
+        const api = await this._dbManager.get(next);
         const dataStr = await api.keyValues();
         Db.addKeyValuesTime(Date.now() - startTime);
 
@@ -94,12 +95,12 @@ export class BluzelleHelper<T> {
             next = value;
             return;
           }
-          BluzelleHelper._cache.set(this.getItemHash(key), JSON.parse(value));
+          KvCachedDB._cache.set(this.getItemHash(key), JSON.parse(value));
           data.push(JSON.parse(value) as T);
         });
       } while (next !== undefined);
 
-      BluzelleHelper._cache.set(this.getLishHash(), data);
+      KvCachedDB._cache.set(this.getLishHash(), data);
       return data;
     } catch (e) {
       const repeatQty = repeat === undefined ? REPEAT_QTY : repeat - 1;
@@ -116,6 +117,8 @@ export class BluzelleHelper<T> {
     }
   }
 
+
+
   async create(
     key: string,
     item: T,
@@ -123,11 +126,11 @@ export class BluzelleHelper<T> {
   ): Promise<string | undefined> {
     try {
       const startTime = Date.now();
-      let api: API;
+      let api: KeyValueDB;
 
       let uuid = this._uuid;
       while (true) {
-        api = await BluzelleAPI.getBluzelle(uuid);
+        api = await this._dbManager.get(uuid);
         const next = (await api.has("Next"))
           ? await api.read("Next")
           : undefined;
@@ -140,16 +143,16 @@ export class BluzelleHelper<T> {
       // Create new UUID
       if ((await api.count()) > 49) {
         const newUUID = uuidv4();
-        await api.create("Next", newUUID, BluzelleAPI.gasPrice);
+        await api.create("Next", newUUID);
         uuid = newUUID;
-        api = await BluzelleAPI.getBluzelle(uuid);
+        api = await this._dbManager.get(uuid);
       }
 
-      await api.create(key, JSON.stringify(item), BluzelleAPI.gasPrice);
+      await api.create(key, JSON.stringify(item));
       Db.addCreateTime(Date.now() - startTime);
 
-      BluzelleHelper._cache.del(this.getItemHash(key));
-      BluzelleHelper._cache.del(this.getLishHash());
+      KvCachedDB._cache.del(this.getItemHash(key));
+      KvCachedDB._cache.del(this.getLishHash());
       return key;
     } catch (e) {
       const repeatQty = repeat === undefined ? REPEAT_QTY : repeat - 1;
@@ -170,8 +173,8 @@ export class BluzelleHelper<T> {
   async insert(item: T): Promise<string | undefined> {
     const key = await this.create(uuidv4(), item);
     if (key === undefined) throw "Cant create an element";
-    BluzelleHelper._cache.set(this.getItemHash(key), item);
-    BluzelleHelper._cache.del(this.getLishHash());
+    KvCachedDB._cache.set(this.getItemHash(key), item);
+    KvCachedDB._cache.del(this.getLishHash());
     return key;
   }
 
@@ -181,11 +184,11 @@ export class BluzelleHelper<T> {
       if (api === undefined) return undefined;
 
       const startTime = Date.now();
-      await api.update(key, JSON.stringify(item), BluzelleAPI.gasPrice);
+      await api.update(key, JSON.stringify(item));
       Db.addUpdateTime(Date.now() - startTime);
 
-      BluzelleHelper._cache.set(this.getItemHash(key), item);
-      BluzelleHelper._cache.del(this.getLishHash());
+      KvCachedDB._cache.set(this.getItemHash(key), item);
+      KvCachedDB._cache.del(this.getLishHash());
     } catch (e) {
       const repeatQty = repeat === undefined ? REPEAT_QTY : repeat - 1;
       if (repeatQty <= 0) {
@@ -206,9 +209,9 @@ export class BluzelleHelper<T> {
       const api = await this.findInList(key, this._uuid);
       if (api === undefined) return undefined;
 
-      await api.delete(key, BluzelleAPI.gasPrice);
-      BluzelleHelper._cache.del(this.getItemHash(key));
-      BluzelleHelper._cache.del(this.getLishHash());
+      await api.delete(key);
+      KvCachedDB._cache.del(this.getItemHash(key));
+      KvCachedDB._cache.del(this.getLishHash());
     } catch (e) {
       const repeatQty = repeat === undefined ? REPEAT_QTY : repeat - 1;
       if (repeatQty <= 0) {
