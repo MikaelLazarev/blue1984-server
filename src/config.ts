@@ -6,6 +6,7 @@
 import { IsNotEmpty, validate } from "class-validator";
 import { Service } from "typedi";
 import { config } from "dotenv";
+import * as fs from "fs";
 
 @Service()
 export class ConfigService {
@@ -33,7 +34,11 @@ export class ConfigService {
   dbType: string;
 
   constructor() {
-    config();
+    if (fs.existsSync(".env.local")) {
+      config({ path: ".env.local" });
+    } else {
+      config();
+    }
 
     this.port = parseInt(process.env.PORT || "4000");
 
@@ -43,7 +48,7 @@ export class ConfigService {
     this.sentryDSN = process.env.SENTRY_DSN || "";
     this.updateDelay = parseInt(process.env.UPDATE_DELAY || "0");
     this.twitterBearerToken = process.env.TWITTER_BEARER_TOKEN || "";
-    this.dbType =  process.env.DB_TYPE || "";
+    this.dbType = process.env.DB_TYPE || "";
   }
 
   async validate() {

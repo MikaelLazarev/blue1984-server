@@ -3,11 +3,8 @@
 
 ![1984v2 008](https://user-images.githubusercontent.com/26343374/85220247-9d21a580-b3b2-11ea-8870-ccc5a0f1d1eb.jpeg)
 
-This anti-censorship app for twitter was designed from scratch especially for Bluzelle hackathon.
-
-Official site: https://blue1984.herokuapp.com/
-
-Video demo: https://youtu.be/O3uLL3kWXAY
+This anti-censorship app for twitter  
+Video: https://youtu.be/O3uLL3kWXAY
 
 ## Problem
 
@@ -39,35 +36,28 @@ Mobile apps: https://github.com/MikaelLazarev/blue1984-mobile
 
 Front-end: https://github.com/MikaelLazarev/blue1984-web
 
-Twitter scrapper microservice: https://github.com/MikaelLazarev/blue1984-scrapper
 
 ## How to install:
 
 1. Clone this repository: ```git clone git@github.com:MikaelLazarev/blue1984-server.git```
 
-2. Set up & deploy python microservice as its written https://github.com/MikaelLazarev/blue1984-ts#how-to-install
+2. Change dir: ```cd blue1984-server```
 
-3. Change dir: ```cd blue1984-server```
+3. Install all dependencies: ```yarn or npm i```
 
-4. Install all dependencies: ```yarn or npm i```
+4. Fill .env file:
 
-5. Create a configuration file (do not use json file in production!) ```mv ./src/config/config.sample.json ./src/config/config.json```
-
-6. Open config file./src/config/config.json and fill required properties:
 ```
-{
-  "port": <Server port, default: 4000>,
-  "bluzelle_mnemonic": <Mnemonic for Bluzelle account>,
-  "bluzelle_endpoint": <Bluzelle server entry point>,
-  "bluzelle_chain_id": <Bluzelle chain_id>,
-  "mainDB": "<Main Bluzelle DB UUID>",
-  "sentryDSN": "<Sentry DSN code>",
-  "scrapper": "<Python microservice address>",
-  "scrapper_token" : "<Python microservice basic auth token>",
-  "updateDelay": "<delay in seconds between update cycles>"
-}
+PORT= <Server port, default: 4000>
+BLUZELLE_MNEMONIC= <Mnemonic for Bluzelle account>
+BLUZELLE_ENDPOINT= <Bluzelle server entry point>
+MAIN_DB=<Main Bluzelle DB UUID>
+SENTRY_DSN=<Sentry DSN code>
+UPDATE_DELAY=<delay in seconds between update cycles>
+TWITTER_BEARER_TOKEN=<Twitter API bearer token>
+DB_TYPE=<Mem for memory DB, Blu for bluzelle>
 ```
-7. Run server for local development with ```yarn dev``` or ```npm run dev```
+5. Run server for local development with ```yarn dev``` or ```npm run dev```
 
 ## Disclaimer
 
