@@ -20,8 +20,10 @@ export class AccountsRepository implements AccountsRepositoryI {
     this._db = new KvCachedDB<Account>(this._dbManager, config.mainDB);
   }
 
-  async getOrCreate(newAccount: Account): Promise<Account | undefined> {
+  async getOrCreate(newAccount: Account): Promise<Account> {
     const existingAcc = await this._db.findOne(newAccount.id);
+    console.log("FOUND NEXT", existingAcc);
+
     if (existingAcc !== undefined) return existingAcc;
 
     await this._db.create(newAccount.id, newAccount);

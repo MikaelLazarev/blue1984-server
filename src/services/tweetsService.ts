@@ -1,24 +1,15 @@
-import {
-  Tweet,
-  tweetComparator,
-  TweetsRepositoryI,
-  TweetsServiceI,
-} from "../core/tweet";
-import { Container, Service } from "typedi";
-import { TweetsRepository } from "../repository/tweetsRepository";
-import {
-  Account,
-  AccountsRepositoryI,
-  AccountsServiceI,
-} from "../core/accounts";
-import { AccountsRepository } from "../repository/accountsRepository";
-import { AccountListDTO } from "../payloads/accounts";
-import { AccountsService } from "./accountsService";
-import { TwitterRepositoryI } from "../core/twitter";
-import { ConfigService } from "../config";
-import { TwitterRepository } from "../repository/twitterRepository";
-import { FeedQuery, TweetsListDTO } from "../payloads/tweets";
-import { ErrorHandler } from "../middleware/errorHandler";
+import {Tweet, tweetComparator, TweetsRepositoryI, TweetsServiceI,} from "../core/tweet";
+import {Container, Service} from "typedi";
+import {TweetsRepository} from "../repository/tweetsRepository";
+import {Account, AccountsRepositoryI, AccountsServiceI,} from "../core/accounts";
+import {AccountsRepository} from "../repository/accountsRepository";
+import {AccountListDTO} from "../payloads/accounts";
+import {AccountsService} from "./accountsService";
+import {TwitterRepositoryI} from "../core/twitter";
+import {ConfigService} from "../config";
+import {TwitterRepository} from "../repository/twitterRepository";
+import {FeedQuery, TweetsListDTO} from "../payloads/tweets";
+import {ErrorHandler} from "../middleware/errorHandler";
 import {Logger} from "tslog";
 
 @Service()
@@ -62,7 +53,6 @@ export class TweetsService implements TweetsServiceI {
       allTweets.push(...tweetsFiltered);
     }
 
-
     const start = feedQuery.offset;
     const end = Math.min(allTweets.length, start + feedQuery.limit);
 
@@ -78,7 +68,10 @@ export class TweetsService implements TweetsServiceI {
   startUpdate() {
     console.log("Updates started...");
     this.stopUpdate();
-    // this._updater = setTimeout(async () => await this.updateAll(), 1000);
+    this._updater = setTimeout(
+      async () => await this.updateAll(),
+      this._updateDelay * 1000
+    );
   }
 
   stopUpdate() {
@@ -108,21 +101,24 @@ export class TweetsService implements TweetsServiceI {
 
   async update(account: Account) {
     const { username, bluID } = account;
-    this._logger.info(`Updating ${username} with ${bluID}`);
+    this._logger.debug(`Updating ${username} with ${bluID}`);
 
     try {
       const tweets = await this._twitterRepository.getUserTimeline(account.id);
 
-      const savedTweets = await this._repository.list(bluID);
+      const savedTweets = (await this._repository.list(account.bluID)) || [];
       if (savedTweets === undefined) return;
 
-      const savedTweetsId = new Set<string>(savedTweets.map((t) => t.id));
-      const fromTwittersId = new Set<string>(tweets.map((t) => t.id));
+      const savedTweetsId: Record<string, boolean> = {};
+      savedTweets.forEach((t) => (savedTweetsId[t.id] = true));
 
-      const deletedTweets = savedTweets.filter(
-        (t) => !fromTwittersId.has(t.id)
-      );
-      const newTweets = tweets.filter((t) => !savedTweetsId.has(t.id));
+      const fromTwittersId: Record<string, boolean> = {};
+      tweets.forEach((t) => (fromTwittersId[t.id] = true));
+
+      this._logger.debug(savedTweetsId);
+
+      const deletedTweets = savedTweets.filter((t) => !fromTwittersId[t.id]);
+      const newTweets = tweets.filter((t) => !savedTweetsId[t.id]);
 
       this._logger.info(`New tweets to inserts: ${newTweets.length}`);
       this._logger.info(`Total deleted tweets: ${deletedTweets.length}`);

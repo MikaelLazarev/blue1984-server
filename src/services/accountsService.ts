@@ -46,13 +46,13 @@ export class AccountsService implements AccountsServiceI {
         try {
           const profile = await this._twitterRepository.getUserInfo(username);
 
-          console.log("PROFILE", profile);
-          const newAccount: Account = {
+          console.log("FOUND PROFILE", profile);
+          let newAccount: Account = {
             bluID: uuidv4(),
             ...profile,
           };
 
-          await this._repository.getOrCreate(newAccount);
+          newAccount = await this._repository.getOrCreate(newAccount);
           // console.log(await this._twitterRepository.getUserTimeline(profile.id));
           // this.startUpdate();
           resolve({ id: profile.id });

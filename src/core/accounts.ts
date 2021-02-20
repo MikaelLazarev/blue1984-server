@@ -11,7 +11,7 @@ export interface Account extends TwitterAccount {
 }
 
 export interface AccountsRepositoryI {
-  getOrCreate(dto: AccountCreateDTO): Promise<Account | undefined>;
+  getOrCreate(dto: AccountCreateDTO): Promise<Account>;
   update(newAccount: Account): Promise<void>;
   findOne(id: string): Promise<Account | undefined>;
   list(): Promise<Account[] | undefined>;

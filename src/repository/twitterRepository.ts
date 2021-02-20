@@ -92,7 +92,6 @@ export class TwitterRepository implements TwitterRepositoryI {
         nextToken
       )) as TimelineResponse;
 
-      this._logger.debug("META", resp?.meta);
       if (resp?.meta?.result_count && resp.meta.result_count > 0) {
         if (resp.data) {
           const newTweets = (await transformAndValidate(
@@ -100,7 +99,6 @@ export class TwitterRepository implements TwitterRepositoryI {
             resp.data  || []
           )) as Tweet[];
 
-          this._logger.debug(newTweets);
 
           const users = (await transformAndValidate(
             TwitterAccount,
@@ -110,7 +108,6 @@ export class TwitterRepository implements TwitterRepositoryI {
           const usersMap = new Map<string, TwitterAccount>();
           users.forEach((u) => usersMap.set(u.id, u));
 
-          this._logger.debug( resp.includes.media);
           const media = (await transformAndValidate(
             TweetMedia,
             resp.includes.media || []
@@ -140,8 +137,6 @@ export class TwitterRepository implements TwitterRepositoryI {
             return tweet;
           });
 
-          this._logger.debug(JSON.stringify(newTweetsWithAuthor));
-
           result.push(...newTweetsWithAuthor);
         }
 
@@ -152,7 +147,6 @@ export class TwitterRepository implements TwitterRepositoryI {
       }
     }
 
-    this._logger.info(`Got ${result.length} Tweets from ${account}!`);
     return result;
   }
 
